@@ -18,8 +18,8 @@ O projeto **Achados e Perdidos** tem como objetivo o desenvolvimento de uma apli
 | Ana Clara Pereira Souto | 53986 |
 | João Gonçalo Guedes Pinto | 53255 |
 | António Campos dos Santos | 47303 |
-| Mathias | 53035 |
-| Guilherme | 50755 |
+| Mathias Fernando concha pando | 53035 |
+| Guilherme Tomé da Silva | 50755 |
 
 ## Tecnologias
 
