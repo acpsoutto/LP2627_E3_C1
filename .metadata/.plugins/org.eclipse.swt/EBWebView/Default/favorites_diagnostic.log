@@ -37,3 +37,12 @@
 2026-10-15 17:49:24.002: [INFO] BookmarksLoadDropped droppedNodes=0
 2026-10-15 17:49:24.002: [INFO] BookmarksSnapshot Startup total=0 bar=0 other=0 mobile=0 showBar=0 showBarNTP=1
 2026-10-15 17:53:51.861: [INFO] BookmarksSnapshot Shutdown total=0 bar=0 other=0 mobile=0 showBar=0 showBarNTP=1
+2026-10-15 18:10:00.566: [INFO] CurrentProfilePath: C:\Users\jgpin\Documents\GitHub\LP2627_E3_C1\.metadata\.plugins\org.eclipse.swt\EBWebView\Default
+2026-10-15 18:10:00.566: [INFO] Profiles total count: 1
+2026-10-15 18:10:00.567: [INFO] Profile: name=Perfil 1 path=C:\Users\jgpin\Documents\GitHub\LP2627_E3_C1\.metadata\.plugins\org.eclipse.swt\EBWebView\Default lastActive=2026-10-14T16:19:53.383Z
+2026-10-15 18:10:00.567: [INFO] LastUsedProfileDir: C:\Users\jgpin\Documents\GitHub\LP2627_E3_C1\.metadata\.plugins\org.eclipse.swt\EBWebView\Default
+2026-10-15 18:10:00.567: [INFO] MostRecentlyActiveProfile: name=Perfil 1 path=C:\Users\jgpin\Documents\GitHub\LP2627_E3_C1\.metadata\.plugins\org.eclipse.swt\EBWebView\Default lastActive=2026-10-14T16:19:53.383Z
+2026-10-15 18:10:00.567: [INFO] OnDoneLoading sync enabled: 0
+2026-10-15 18:10:00.567: [INFO] BookmarkModelLoaded, ids_reassigned: 0
+2026-10-15 18:10:00.567: [INFO] BookmarksLoadDropped droppedNodes=0
+2026-10-15 18:10:00.567: [INFO] BookmarksSnapshot Startup total=0 bar=0 other=0 mobile=0 showBar=0 showBarNTP=1
