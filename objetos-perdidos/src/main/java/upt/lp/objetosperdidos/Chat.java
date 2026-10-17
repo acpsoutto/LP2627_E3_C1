@@ -1,7 +1,6 @@
 package upt.lp.objetosperdidos;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -60,6 +59,10 @@ public class Chat {
 	public Anuncio getAnuncio() {
 		return anuncio;
 	}
+	
+	 public void setAnuncio(Anuncio anuncio) {
+	        this.anuncio = anuncio;
+	    }
 
 	public LocalDate getDataCriacao() {
 		return dataCriacao;

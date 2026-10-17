@@ -1,5 +1,8 @@
 package upt.lp.objetosperdidos;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import jakarta.persistence.*;
 
 @Entity
@@ -26,6 +29,8 @@ public class Utilizador {
 	@Column(nullable = false)
 	private TipoUtilizador tipo;
 	
+	private List<Chat> chats = new ArrayList<>();
+			
 	//O Hibernate exige o construtor vazio
 	public Utilizador() {
 	}
@@ -58,6 +63,10 @@ public class Utilizador {
 	public TipoUtilizador getTipo() {
 		return tipo;
 	}
+	
+	 public List<Chat> getChats() {
+	        return chats;
+	   }
 
 	@Override
 	public String toString() {
