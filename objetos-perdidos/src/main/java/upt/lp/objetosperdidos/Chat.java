@@ -21,6 +21,11 @@ public class Chat {
 		this.interessado = interessado;
 		this.dataCriacao = LocalDate.now();
 		this.criador= anuncio.getUtilizador();
+		mensagens = new ArrayList<>();
+	}
+	
+	public void adicionarMensagem(Mensagem m) {
+		mensagens.add(m);
 	}
 
 	public int getIdChat() {
