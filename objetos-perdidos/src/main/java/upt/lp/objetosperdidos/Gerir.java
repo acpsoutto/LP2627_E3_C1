@@ -1,5 +1,6 @@
 package upt.lp.objetosperdidos;
 
+import java.util.ArrayList;
 import java.util.List;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -12,6 +13,8 @@ import org.passay.*; //password e ver uma bibliteca para o email
 public class Gerir {
 	
 	private SessionFactory sessionFactory;
+	private ArrayList<Chat> chats = new ArrayList<>();
+	
 //UTILIZADOR - alterar 2 sprint
 	private ArrayList<Utilizador> utilizadores = new ArrayList<>();
 	private Utilizador sessao = null;
@@ -119,6 +122,27 @@ public class Gerir {
 		        transaction.commit();
 		        return chat;		
 		}
+		
+		public void imprimirChats(ArrayList<Chat> chats) {
+			if (chats.isEmpty()) {
+				System.out.println("Sem chats.");
+			}
+			for (Chat c : chats) {
+				System.out.println(c.getIdChat() + " - " + c.getAnuncio().getTitulo());
+			}
+		}
+		
+		public ArrayList<Chat> listarChats(Utilizador u) {
+			ArrayList<Chat> meusChats = new ArrayList<>();
+			for (Chat c : chats) {
+				if (c.getCriador().getIdUtilizador() == u.getIdUtilizador()
+						|| c.getInteressado().getIdUtilizador() == u.getIdUtilizador()) {
+					meusChats.add(c);
+				}
+			}
+			return meusChats;
+		}
+		
 	
 //ANA - UTILIZADOR----------------------------
 

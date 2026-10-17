@@ -17,7 +17,7 @@ public class Teste {
 		while(opL != 0) {
 			System.out.println("Login:");
 			System.out.println("1- Novo utilizador.");
-			System.out.println("2- Utilizador existem.");
+			System.out.println("2- Utilizador existente.");
 			System.out.println("0- Fechar programa");
 			opL = sc.nextInt();
 			sc.nextLine();
@@ -49,7 +49,7 @@ public class Teste {
 				System.out.println("1- Mostrar anuncios de Procura-se.");
 				System.out.println("2- Mostrar anunicos de Encontrados.");
 				System.out.println("3- Criar anuncio.");
-				System.out.println("4- Visualizar menssagens.");
+				System.out.println("4- Visualizar mensagens.");
 				System.out.println("0- Logout.");
 				System.out.println("Opção: ");
 					
@@ -59,7 +59,7 @@ public class Teste {
 				switch(op) {
 				case 1, 2:
 						
-					gr.imprimirAnuncios(gr.filtrarAnuncios(op,null,null.null));
+					gr.imprimirAnuncios(gr.filtrarAnuncios(op,null,null,null));
 					int opt ;
 					
 					while(opt == 2) {
@@ -75,7 +75,7 @@ public class Teste {
 						System.out.println("Qual anuncio quer revendicar:");
 						int Rid = sc.nextInt();
 						sc.nextLine();
-						gr.revindicar(Rid);
+						gr.reivindicar(Rid);
 						
 					}
 					if(opt == 2){
