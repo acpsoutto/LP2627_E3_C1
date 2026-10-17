@@ -18,7 +18,6 @@ public abstract class Anuncio {
 	private List <Chat> chats = new ArrayList<>();
 	
 	public Anuncio() {
-		
 	}
 	
 	public Anuncio(Utilizador utilizador, String titulo, Categoria categoria, String descricao, String cor) {
