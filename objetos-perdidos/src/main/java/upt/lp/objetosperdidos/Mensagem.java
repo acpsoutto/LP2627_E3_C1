@@ -29,10 +29,6 @@ public class Mensagem {
 	}
 
 
-	public void setIdMensagem(int idMensagem) {
-		this.idMensagem = idMensagem;
-	}
-
 
 	public Chat getChat() {
 		return chat;
@@ -56,11 +52,6 @@ public class Mensagem {
 
 	public LocalDateTime getHora() {
 		return hora;
-	}
-
-
-	public void setHora(LocalDateTime hora) {
-		this.hora = hora;
 	}
 
 
