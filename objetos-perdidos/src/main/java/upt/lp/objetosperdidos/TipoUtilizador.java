@@ -1,4 +1,4 @@
-package upt.lp.objetosperdidos.model;
+package upt.lp.objetosperdidos;
 
 public enum TipoUtilizador {
 	Normal,
