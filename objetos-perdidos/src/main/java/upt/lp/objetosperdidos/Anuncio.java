@@ -1,8 +1,12 @@
 package upt.lp.objetosperdidos;
+
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.List;
 
 public abstract class Anuncio {
+	
+	private int idAnuncio;
 	private String titulo;
 	private Utilizador utilizador;
 	private Categoria categoria;
@@ -11,96 +15,98 @@ public abstract class Anuncio {
 	private LocalDate dataPublicacao;
 	private String cor;
 	private LocalDate dataResolucao;
-	private ArrayList<Chat> chats;
+	private List <Chat> chats = new ArrayList<>();
 	
+	public Anuncio() {
+		
+	}
 	
-	public Anuncio(Utilizador utilizador, String titulo, Categoria categoria, Estado estado, String descricao, LocalDate dataPublicacao, String cor) {
+	public Anuncio(Utilizador utilizador, String titulo, Categoria categoria, String descricao, String cor) {
         this.utilizador = utilizador;
         this.titulo = titulo;
         this.categoria = categoria;
-        this.estado = estado;
+        this.estado = Estado.PENDENTE;
         this.descricao = descricao;
-        this.dataPublicacao = dataPublicacao;
+        this.dataPublicacao = LocalDate.now();
         this.cor = cor;
-        this.chats = new ArrayList<>();
     }
 	
+	public void addChat (Chat chat) {
+		chats.add(chat);
+		chat.setAnuncio(this);
+	}
+	
+	
+	public int getIdAnuncio() {
+		return idAnuncio;
+	}
+
 	public String getTitulo() {
 		return titulo;
 	}
-	
-	public Utilizador getUtilizador() {
-		return utilizador;
-	}
-	
-	public Categoria getCategoria() {
-		return categoria;
-	}
-	
-	public Estado getEstado() {
-		return estado;
-	}
-	
-	
-	public String getDescricao() {
-		return descricao;
-	}
-	
-	public LocalDate getDataResolucao() {
-		return dataResolucao;
-	}
-	
-	public String getCor() {
-		return cor;
-	}
-	
-	public LocalDate getDataPublicacao() {
-		return dataPublicacao;
-	}
-	
-	public ArrayList<Chat> getChats(){
-		return chats;
-	}
-	
-	public void setUtilizador(Utilizador utilizador) {
-		this.utilizador = utilizador;
-	}
-	
+
 	public void setTitulo(String titulo) {
 		this.titulo = titulo;
 	}
-	
+
+	public Utilizador getUtilizador() {
+		return utilizador;
+	}
+
+	public void setUtilizador(Utilizador utilizador) {
+		this.utilizador = utilizador;
+	}
+
+	public Categoria getCategoria() {
+		return categoria;
+	}
+
 	public void setCategoria(Categoria categoria) {
 		this.categoria = categoria;
 	}
-	
+
+	public Estado getEstado() {
+		return estado;
+	}
+
 	public void setEstado(Estado estado) {
 		this.estado = estado;
 	}
-	
-	public void setDescricao (String descricao) {
+
+	public String getDescricao() {
+		return descricao;
+	}
+
+	public void setDescricao(String descricao) {
 		this.descricao = descricao;
 	}
-	
+
+	public LocalDate getDataPublicacao() {
+		return dataPublicacao;
+	}
+
 	public void setDataPublicacao(LocalDate dataPublicacao) {
 		this.dataPublicacao = dataPublicacao;
 	}
-	
+
+	public String getCor() {
+		return cor;
+	}
+
 	public void setCor(String cor) {
 		this.cor = cor;
 	}
-	
+
+	public LocalDate getDataResolucao() {
+		return dataResolucao;
+	}
+
 	public void setDataResolucao(LocalDate dataResolucao) {
 		this.dataResolucao = dataResolucao;
 	}
-	
-	public void setChats(ArrayList<Chat> chats) {
-		this.chats = chats;
+
+	public List<Chat> getChats() {
+		return chats;
 	}
-	
-	public void adicionarChat(Chat chat) {
-        this.chats.add(chat);
-    }
-	
 	
 }
