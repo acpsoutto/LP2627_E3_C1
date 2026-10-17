@@ -37,7 +37,7 @@ public class Gerir {
 		    hql = hql + " order by a.dataPublicacao desc";
 		    try (Session session = sessionFactory.openSession()) {
 		        Query<Anuncio> query = session.createQuery(hql, Anuncio.class);
-		        query.setParameter("estado", Estado.Pendente);
+		        query.setParameter("estado", Estado.PENDENTE);
 
 		        if (categoria != null) {
 		            query.setParameter("categoria", categoria);
@@ -63,7 +63,7 @@ public class Gerir {
 
 		public void revindicar(long anuncioID, long utiID) {
 			Transaction transaction = null;
-
+			try (Session session = sessionFactory.openSession()) {
 		        transaction = session.beginTransaction();
 		        Anuncio anuncio = session.get(Anuncio.class, anuncioID);
 		        Utilizador utilizador = session.get(Utilizador.class, utiID);
@@ -71,27 +71,19 @@ public class Gerir {
 		        if (anuncio == null || utilizador == null) {
 		            System.out.println("Anúncio ou utilizador não encontrado.");
 		            transaction.rollback();
-		            return null;
+		            return;
 		        }
 
-		        Utilizador dono = anuncio.getPublicador();
+		        Utilizador dono = anuncio.getUtilizador();
 		        
-		        if (anuncio.getEstado() == Estado.Resolvido) {
+		        if (anuncio.getEstado() == Estado.RESOLVIDO) {
 		            System.out.println("Este anúncio já foi resolvido.");
 		            transaction.rollback();
-		            return null;
+		            return;
 		        }
 
-		        List<Chat> existentes = session.createQuery("select c from Chat c join c.participantes p "
-		                        + "where c.anuncio.id = :anuncioId and p.id = :utilizadorId", Chat.class)
-		                .setParameter("anuncioId", anuncioId)
-		                .setParameter("utilizadorId", utilizadorId)
-		                .getResultList();
-
-		        Chat chat = new Chat(anuncio);
-		        chat.addParticipante(dono);
-		        chat.addParticipante(utilizador);
-		        anuncio.addChat(chat);
+		        Chat chat = new Chat(anuncio, utilizador);
+		        //FAZER Ligação de anuncio.addChat(chat);
 
 		        String text;
 		        if (anuncio instanceof AnuncioEncontrado) {
@@ -100,10 +92,15 @@ public class Gerir {
 		            text = "Olá, eu acho que encontrei o seu pertence!";
 		        }
 
-		        Mensagem mensagem = new Mensagem(utilizador, texto);
-		        chat.addMensagem(mensagem);
-
-		        transaction.commit();
-		        return chat;		
+		        Mensagem mensagem = new Mensagem(chat, utilizador, text);
+		        chat.adicionarMensagem(mensagem);
+		        transaction.commit();	
+			 } catch (Exception e) {
+			        if (transaction != null && transaction.isActive()) {
+			            transaction.rollback();
+			        }
+			        e.printStackTrace();
+			        return;
+			    }
 		}
 	}

@@ -10,6 +10,7 @@ public class Teste {
 		String email;
 		String pass;
 		int opL= 1;
+		Categoria categoria;
 		
 		/**
 		 * Login
@@ -57,9 +58,10 @@ public class Teste {
 				sc.nextLine();
 					
 				switch(op) {
-				case 1, 2:
+				case 1:
+				case 2:
 						
-					gr.imprimirAnuncios(gr.filtrarAnuncios(op,null,null.null));
+					gr.imprimirAnuncios(gr.filtrarAnuncios(op,null,null,null));
 					int opt ;
 					
 					while(opt == 2) {
@@ -75,7 +77,7 @@ public class Teste {
 						System.out.println("Qual anuncio quer revendicar:");
 						int Rid = sc.nextInt();
 						sc.nextLine();
-						gr.revindicar(Rid);
+						gr.revindicar(Rid,utiID);
 						
 					}
 					if(opt == 2){
@@ -100,7 +102,6 @@ public class Teste {
 				            gr.imprimirAnuncios(gr.filtrarAnuncios(op,categoria, cor,titulo));
 						}
 					}	
-				}
 						
 				
 				break;
@@ -129,7 +130,7 @@ public class Teste {
 					* PERMITIR ESCOLHER ENTRE CRIAR OU REVEENDICAR ANUNCIO
 					* 
 					*/
-						
+				break;		
 				case 4:
 					/**
 					* LISTA DE CHATS E PODER ESCOLHER UM PARA CONTINUAR A FALAR;
