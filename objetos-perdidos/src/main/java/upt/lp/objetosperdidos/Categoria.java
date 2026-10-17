@@ -1,5 +1,9 @@
 package upt.lp.objetosperdidos;
 
-public class Categoria {
-
+public enum Categoria {
+	ELETRONICOS,
+	LIVROS,
+	MATERIAL_ESCRITA,
+	ROUPA
+	
 }

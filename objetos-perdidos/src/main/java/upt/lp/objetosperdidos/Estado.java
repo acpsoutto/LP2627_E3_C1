@@ -1,5 +1,6 @@
 package upt.lp.objetosperdidos;
 
-public class Estado {
-
+public enum Estado {
+	PENDENTE, 
+	RESOLVIDO
 }
