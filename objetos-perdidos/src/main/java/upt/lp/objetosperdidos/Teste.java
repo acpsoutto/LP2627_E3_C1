@@ -18,7 +18,7 @@ public class Teste {
 		while(opL != 0) {
 			System.out.println("Login:");
 			System.out.println("1- Novo utilizador.");
-			System.out.println("2- Utilizador existem.");
+			System.out.println("2- Utilizador existente.");
 			System.out.println("0- Fechar programa");
 			opL = sc.nextInt();
 			sc.nextLine();
@@ -50,7 +50,7 @@ public class Teste {
 				System.out.println("1- Mostrar anuncios de Procura-se.");
 				System.out.println("2- Mostrar anunicos de Encontrados.");
 				System.out.println("3- Criar anuncio.");
-				System.out.println("4- Visualizar menssagens.");
+				System.out.println("4- Visualizar mensagens.");
 				System.out.println("0- Logout.");
 				System.out.println("Opção: ");
 					
