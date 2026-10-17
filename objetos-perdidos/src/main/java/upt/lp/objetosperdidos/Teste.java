@@ -6,6 +6,7 @@ public class Teste {
 
 	public static void main(String[] args) {
 		Scanner sc = new Scanner(System.in);
+		Gerir gr = new Gerir();
 		String email;
 		String pass;
 		int opL= 1;
@@ -58,17 +59,49 @@ public class Teste {
 				switch(op) {
 				case 1, 2:
 						
-					if(op == 1) {
-						//IMPRIMIR ANUNCIOS DE PROCURA-SE
-					}
-					else {
-						//IMPRIMIR ANUNCIOS DE ENCONTRADOS
-					}
+					gr.imprimirAnuncios(gr.filtrarAnuncios(op,null,null.null));
+					int opt ;
+					
+					while(opt == 2) {
+					
+					System.out.println("1- Revendicar Anuncio");
+					System.out.println("2- Filtrar Pesquisa");
+					System.out.println("Outra opção- Voltar");
+					System.out.println("Opção");
+					opt = sc.nextInt();
+					sc.nextLine();
+					
+					if(opt == 1) {
+						System.out.println("Qual anuncio quer revendicar:");
+						int Rid = sc.nextInt();
+						sc.nextLine();
+						gr.revindicar(Rid);
 						
-					/*
-					 * REENVIDICAR ANUNCIO
-					 * PESQUISA FILTRADA
-					 */
+					}
+					if(opt == 2){
+						System.out.println("Categoria (Enter para não inserir):");
+						System.out.println("Eletronicos, Livros, Material_Escrita, Roupa");
+
+						String cat = sc.nextLine().trim();
+						
+						System.out.println("Cor (Enter para não inserir):");
+						String cor = sc.nextLine().trim();
+
+						if (!cat.isEmpty()) {
+						    categoria = Categoria.valueOf(cat.toUpperCase());
+						}
+						
+						 System.out.println("Texto no título (Enter para ignorar, mínimo 3 letras):");
+				         String titulo = sc.nextLine().trim();
+				            if (titulo.length() > 0 && titulo.length() < 3) {
+				                System.out.println("Menos de 3 letras, o título foi ignorado.");
+				                titulo = "";
+				            }
+				            gr.imprimirAnuncios(gr.filtrarAnuncios(op,categoria, cor,titulo));
+						}
+					}	
+				}
+						
 				
 				break;
 					
