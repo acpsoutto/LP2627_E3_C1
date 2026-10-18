@@ -78,7 +78,6 @@ public class Teste {
 						int Rid = sc.nextInt();
 						sc.nextLine();
 						gr.revindicar(Rid,utiID);
-						
 					}
 					if(opt == 2){
 						System.out.println("Categoria (Enter para não inserir):");

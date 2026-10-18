@@ -8,7 +8,7 @@ public class AnuncioEncontrado extends Anuncio {
 		
 	}
 
-	public AnuncioEncontrado(Utilizador utilizador, String titulo, Categoria categoria, String descricao, String cor) {
+	public AnuncioEncontrado(Utilizador utilizador, String titulo, Categoria categoria, String descricao, String cor, String localizacao) {
 		super(utilizador, titulo, categoria, descricao, cor);
 		this.localizacao = localizacao;
 	}
@@ -23,12 +23,6 @@ public class AnuncioEncontrado extends Anuncio {
 
 	@Override
 	public String toString() {
-		return "AnuncioEncontrado [localizacao=" + localizacao + ", getIdAnuncio()=" + getIdAnuncio() + ", getTitulo()="
-				+ getTitulo() + ", getUtilizador()=" + getUtilizador() + ", getCategoria()=" + getCategoria()
-				+ ", getEstado()=" + getEstado() + ", getCor()=" + getCor() + "]";
+		return ""+ getIdAnuncio() +"-Encontrou-se: " + getTitulo() +" "+ getCor() +" " +getCategoria() + " encontrado em " + localizacao + " por "+ getUtilizador();
 	}
-	
-	
-	
-	
 }

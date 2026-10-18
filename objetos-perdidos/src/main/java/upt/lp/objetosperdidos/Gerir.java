@@ -2,6 +2,7 @@ package upt.lp.objetosperdidos;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.time.LocalDate;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
@@ -207,12 +208,22 @@ public class Gerir {
 	}
 	//METODO AUXILIARES (so usados dentro desta classe, por isso 'private')
 	
-	// Pergunta à BD se existe um utilizador com este email (null se não existir)
-	private Utilizador procurarPorEmail(Session session, String email) {
-	    return session.createQuery(
-	            "from Utilizador where lower(email) = :email", Utilizador.class)
-	            .setParameter("email", email.toLowerCase())
-	            .getSingleResultOrNull();
+	//Pecorrer a lista e devolve o utilizador com este email
+	//se nao encontrar nenhum, devolva null
+	
+	private Utilizador procurarPorEmail(String email) {
+		//Procurar mediante a BD
+		try (Session session = sessionFactory.openSession()) {
+            List<Utilizador> lista = session
+                    .createQuery("from Utilizador u where u.email = :email", Utilizador.class)
+                    .setParameter("email", email)
+                    .getResultList();
+
+            if (lista.isEmpty()) {
+                return null;
+            }
+            return lista.get(0);
+        }
 	}
 
     // Pede à Passay para verificar a password.
@@ -220,5 +231,76 @@ public class Gerir {
     // validate(...) aplica as regras; isValid() devolve true se cumpriu todas.
     private boolean passwordValida(String password) {
         return validador.validate(new PasswordData(password)).isValid();
+    }
+    
+// MATHIAS
+    //Atualizar dados pessoais
+    //US04
+    public void atualizarDadosPessoais(int idUtilizador, String novoNome, String novoEmail, String novaPassword) {
+        if (!passwordValida(novaPassword)) {
+            System.out.println("Erro: A nova password deve conter uma maiúscula e um carácter especial.");
+            return;
+        }
+
+        Utilizador existente = procurarPorEmail(novoEmail);
+        if (existente != null && existente.getIdUtilizador() != idUtilizador) {
+            System.out.println("Erro: O novo email já existe no sistema.");
+            return;
+        }
+
+        Transaction transaction = null;
+        try (Session session = sessionFactory.openSession()) {
+            transaction = session.beginTransaction();
+
+            Utilizador u = session.get(Utilizador.class, idUtilizador);
+            if (u != null) {
+                u.setNome(novoNome);
+                u.setEmail(novoEmail);
+                u.setPassword(novaPassword);
+                System.out.println("Dados atualizados com sucesso!");
+            } else {
+                System.out.println("Utilizador não encontrado.");
+            }
+
+            transaction.commit();
+        } catch (Exception e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            e.printStackTrace();
+        }
+    }
+    //US10
+    public void mostrarEstatisticas(LocalDate inicio, LocalDate fim) {
+        try (Session session = sessionFactory.openSession()) {
+            List<Anuncio> lista = session
+                    .createQuery(
+                            "from Anuncio a " +
+                            "where a.dataPublicacao >= :inicio and a.dataPublicacao <= :fim",
+                            Anuncio.class)
+                    .setParameter("inicio", inicio)
+                    .setParameter("fim", fim)
+                    .getResultList();
+
+            int perdidos = 0;
+            int encontrados = 0;
+            int resolvidos = 0;
+
+            for (Anuncio a : lista) {
+                if (a instanceof AnuncioPerdido) {
+                    perdidos++;
+                } else if (a instanceof AnuncioEncontrado) {
+                    encontrados++;
+                }
+                if (a.getEstado() == Estado.RESOLVIDO) {
+                    resolvidos++;
+                }
+            }
+
+            System.out.println("\n--- Estatísticas (" + inicio + " a " + fim + ") ---");
+            System.out.println("Objetos Perdidos: " + perdidos);
+            System.out.println("Objetos Encontrados: " + encontrados);
+            System.out.println("Objetos com Match (Resolvidos): " + resolvidos);
+        }
     }
 }

@@ -1,5 +1,8 @@
 package upt.lp.objetosperdidos;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import jakarta.persistence.*;
 
 @Entity
@@ -26,16 +29,18 @@ public class Utilizador {
 	@Column(nullable = false)
 	private TipoUtilizador tipo;
 	
-	// Obrigatório para o Hibernate
+	@ManyToMany(mappedBy = "utilizadores")
+	private List<Chat> chats = new ArrayList<>();
+			
+	//O Hibernate exige o construtor vazio
 	public Utilizador() {
 	}
 
-	// Sem id: é a base de dados que o gera
-	public Utilizador(String nome, String email, String password, TipoUtilizador tipo) {
-	    this.nome = nome;
-	    this.email = email;
-	    this.password = password;
-	    this.tipo = tipo;
+	public Utilizador( String nome, String email, String password, TipoUtilizador tipo) {
+		this.nome = nome;
+		this.email = email;
+		this.password = password;
+		this.tipo = tipo;
 	}
 		public long getIdUtilizador() {
 		return idUtilizador;
@@ -56,11 +61,28 @@ public class Utilizador {
 	public TipoUtilizador getTipo() {
 		return tipo;
 	}
+	
+	 public List<Chat> getChats() {
+	        return chats;
+	   }
+	 
+
+	public void setNome(String nome) {
+		this.nome = nome;
+	}
+
+	 public void setEmail(String email) {
+		 this.email = email;
+	 }
+
+	 public void setPassword(String password) {
+		 this.password = password;
+	 }
 
 	@Override
 	public String toString() {
-		return "Utilizador [idUtilizador=" + idUtilizador + ", nome=" + nome + ", email=" + email
-				+ ", tipo=" + tipo + "]";
+		return "ID: " + idUtilizador + "Nome: " + nome + " E-mail: " + email + ", Password: "
+				+ password;
 	}
 	
 }

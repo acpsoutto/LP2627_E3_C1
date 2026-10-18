@@ -6,7 +6,7 @@ import java.util.List;
 
 public abstract class Anuncio {
 	
-	private int idAnuncio;
+	private long idAnuncio;
 	private String titulo;
 	private Utilizador utilizador;
 	private Categoria categoria;
@@ -18,7 +18,6 @@ public abstract class Anuncio {
 	private List <Chat> chats = new ArrayList<>();
 	
 	public Anuncio() {
-		
 	}
 	
 	public Anuncio(Utilizador utilizador, String titulo, Categoria categoria, String descricao, String cor) {
@@ -37,7 +36,7 @@ public abstract class Anuncio {
 	}
 	
 	
-	public int getIdAnuncio() {
+	public long getIdAnuncio() {
 		return idAnuncio;
 	}
 

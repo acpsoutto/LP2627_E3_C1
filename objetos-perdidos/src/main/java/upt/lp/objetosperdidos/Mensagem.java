@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 
 public class Mensagem {
 	
-	private int idMensagem;
+	private long idMensagem;
 	private Chat chat;
 	private Utilizador emissor;
 	private LocalDateTime hora;
@@ -24,14 +24,10 @@ public class Mensagem {
 	}
 
 
-	public int getIdMensagem() {
+	public long getIdMensagem() {
 		return idMensagem;
 	}
 
-
-	public void setIdMensagem(int idMensagem) {
-		this.idMensagem = idMensagem;
-	}
 
 
 	public Chat getChat() {
@@ -59,11 +55,6 @@ public class Mensagem {
 	}
 
 
-	public void setHora(LocalDateTime hora) {
-		this.hora = hora;
-	}
-
-
 	public String getTexto() {
 		return texto;
 	}
@@ -76,7 +67,7 @@ public class Mensagem {
 
 	@Override
 	public String toString() {
-		return "Mensagem [idMensagem=" + idMensagem + ", chat=" + chat + ", hora=" + hora + ", texto=" + texto + "]";
+		return ""+ emissor + ": "+ texto +" " + hora;
 	}
 	
 	
