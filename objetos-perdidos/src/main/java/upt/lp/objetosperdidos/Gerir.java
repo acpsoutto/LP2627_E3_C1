@@ -198,7 +198,7 @@ public class Gerir {
 			return meusChats;
 		}
 		
-		public void imprimirChats(ArrayList<Chat> listaChats) {
+		public void imprimirChats(List<Chat> listaChats) {
 			if (listaChats.isEmpty()) {
 				System.out.println("Sem chats.");
 			}
@@ -319,14 +319,14 @@ public class Gerir {
     // Pede à Passay para verificar a password.
     // new PasswordData(password) embrulha o texto no formato que a Passay precisa.
     // validate(...) aplica as regras; isValid() devolve true se cumpriu todas.
-    private boolean passwordValida(String password) {
+    public boolean passwordValida(String password) {
         return validador.validate(new PasswordData(password)).isValid();
     }
     
 // MATHIAS
     //Atualizar dados pessoais
     //US04
-    public void atualizarDadosPessoais(int idUtilizador, String novoNome, String novoEmail, String novaPassword) {
+    public void atualizarDadosPessoais(long idUtilizador, String novoNome, String novoEmail, String novaPassword) {
         if (!passwordValida(novaPassword)) {
             System.out.println("Erro: A nova password deve conter uma maiúscula e um carácter especial.");
             return;
