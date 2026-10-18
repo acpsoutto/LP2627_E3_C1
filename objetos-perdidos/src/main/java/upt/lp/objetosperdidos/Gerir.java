@@ -3,23 +3,20 @@ package upt.lp.objetosperdidos;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.time.LocalDate;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.query.Query;
-import java.util.ArrayList;
+
 import org.passay.*; //password e ver uma bibliteca para o email
 
 public class Gerir {
 	
 	private SessionFactory sessionFactory;
-	private ArrayList<Chat> chats = new ArrayList<>();
-	
-//UTILIZADOR - alterar 2 sprint
 	private Utilizador sessao = null;
-	private int tentativasFalhadas = 0; //nao esta do diagrama
+	private int tentativasFalhadas = 0;
+	
 	// Validador da Passay: define as regras da password.
     // É criado uma só vez e reutilizado sempre que for preciso validar.
     private PasswordValidator validador = new PasswordValidator(
@@ -33,6 +30,19 @@ public class Gerir {
 	            .configure("hibernate.cfg.xml")
 	            .buildSessionFactory();
 	}
+	
+	public void exit() {
+		if (sessionFactory != null) {
+			sessionFactory.close();
+		}
+	}
+	
+	public void logout() {
+		sessao = null;
+		tentativasFalhadas = 0;
+	}
+	
+	// Métodos para Filtrar, Imprimir e Reivindicar anúncios
 	
 	public List<Anuncio> filtrarAnuncios(int op, Categoria categoria, String cor,String titulo) {
 		 String tipo;
@@ -91,6 +101,14 @@ public class Gerir {
 		            return;
 		        }
 		        
+		        Utilizador dono = anuncio.getUtilizador();
+		        
+		        if (dono.getIdUtilizador()==utilizador.getIdUtilizador()){
+		        	System.out.println("Erro: Não pode reivindicar um anúncio criado por si.");
+		        	transaction.rollback();
+		        	return;
+		        }
+		        
 		        if (anuncio.getEstado() == Estado.RESOLVIDO) {
 		            System.out.println("Este anúncio já foi resolvido.");
 		            transaction.rollback();
@@ -98,7 +116,7 @@ public class Gerir {
 		        }
 
 		        Chat chat = new Chat(anuncio, utilizador);
-		        //FAZER Ligação de anuncio.addChat(chat);
+		        anuncio.addChat(chat);
 
 		        String text;
 		        if (anuncio instanceof AnuncioEncontrado) {
@@ -109,34 +127,108 @@ public class Gerir {
 
 		        Mensagem mensagem = new Mensagem(chat, utilizador, text);
 		        chat.adicionarMensagem(mensagem);
-		        transaction.commit();	
+		        
+		        session.persist(chat);
+		        transaction.commit();
+		        System.out.println("Chat iniciado com sucesso! Primeira mensagem enviada:" + text);
 			 } catch (Exception e) {
 			        if (transaction != null && transaction.isActive()) {
 			            transaction.rollback();
 			        }
 			        e.printStackTrace();
-			        return;
 			    }
 		}
 		
-		public void imprimirChats(ArrayList<Chat> chats) {
-			if (chats.isEmpty()) {
-				System.out.println("Sem chats.");
+		// enviar nova mensagem num chat
+		
+		public void enviarMensagem(long idChat, long idEmissor, String texto) {
+			if (texto == null || texto.isBlank()) {
+				System.out.println("Erro: A mensagem não pode estar vazia");
+				return;
 			}
-			for (Chat c : chats) {
-				System.out.println(c.getIdChat() + " - " + c.getAnuncio().getTitulo());
+			
+			Transaction transaction = null;
+			try (Session session = sessionFactory.openSession()) {
+				transaction = session.beginTransaction();
+
+				Chat chat = session.get(Chat.class, idChat);
+				Utilizador emissor = session.get(Utilizador.class, idEmissor);
+
+				if (chat == null || emissor == null) {
+					System.out.println("Chat ou utilizador não encontrado.");
+					transaction.rollback();
+					return;
+				}
+
+				if (!chat.pertenceAoChat(emissor)) {
+					System.out.println("Erro: Não faz parte deste chat.");
+					transaction.rollback();
+					return;
+				}
+
+				Mensagem novaMsg = new Mensagem(chat, emissor, texto);
+				chat.adicionarMensagem(novaMsg);
+
+				session.persist(novaMsg);
+				transaction.commit();
+				System.out.println("Mensagem enviada!");
+
+				if (chat.getAnuncio().getEstado() == Estado.RESOLVIDO) {
+					System.out.println("O anúncio foi marcado como RESOLVIDO em " + chat.getAnuncio().getDataResolucao());
+				}
+				
+			} catch (Exception e) {
+				if (transaction != null && transaction.isActive()) {
+					transaction.rollback();
+				}
+				e.printStackTrace();
 			}
 		}
 		
-		public ArrayList<Chat> listarChats(Utilizador u) {
-			ArrayList<Chat> meusChats = new ArrayList<>();
-			for (Chat c : chats) {
-				if (c.pertenceAoChat(u)) {
-					meusChats.add(c);
+		public List<Chat> listarChats(Utilizador u) {
+			List<Chat> meusChats = new ArrayList<>();
+
+			try (Session session = sessionFactory.openSession()) {
+				// vai buscar todos os chats à bd (pag49 do tutorial)
+				List<Chat> todosOsChats = session
+						.createQuery("from Chat", Chat.class)
+						.getResultList();
+
+				
+				for (Chat c : todosOsChats) {
+					if (c.getCriador().getIdUtilizador() == u.getIdUtilizador()
+							|| c.getInteressado().getIdUtilizador() == u.getIdUtilizador()) {
+						meusChats.add(c);
+					}
 				}
 			}
 			return meusChats;
 		}
+		
+		public void imprimirChats(ArrayList<Chat> listaChats) {
+			if (listaChats.isEmpty()) {
+				System.out.println("Sem chats.");
+			}
+			for (Chat c : listaChats) {
+				System.out.println(c);
+			}
+		}
+		
+		public void mostrarMensagensChat(long idChat) {
+			try (Session session = sessionFactory.openSession()){
+				Chat c = session.get(Chat.class, idChat);
+				if (c==null) {
+					System.out.println("Chat não encontrado.");
+					return;
+				}
+				
+				System.out.println("\n--- Conversa do Anúncio: " + c.getAnuncio().getTitulo());
+				for (Mensagem m : c.getMensagens()) {
+					System.out.println(m);
+				}
+			}
+		}
+		
 		
 	
 //ANA - UTILIZADOR----------------------------
