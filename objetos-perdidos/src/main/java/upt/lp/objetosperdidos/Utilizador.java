@@ -10,7 +10,7 @@ public class Utilizador {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "idUtilizador")
-	private int idUtilizador;
+	private long idUtilizador;
 	
 	@Column (nullable = false)
 	private String nome;
@@ -26,20 +26,18 @@ public class Utilizador {
 	@Column(nullable = false)
 	private TipoUtilizador tipo;
 	
-	//O Hibernate exige o construtor vazio
+	// Obrigatório para o Hibernate
 	public Utilizador() {
 	}
 
-	public Utilizador(int idUtilizador, String nome, String email, String password, TipoUtilizador tipo) {
-		
-		this.idUtilizador = idUtilizador;
-		this.nome = nome;
-		this.email = email;
-		this.password = password;
-		this.tipo = tipo;
+	// Sem id: é a base de dados que o gera
+	public Utilizador(String nome, String email, String password, TipoUtilizador tipo) {
+	    this.nome = nome;
+	    this.email = email;
+	    this.password = password;
+	    this.tipo = tipo;
 	}
-
-	public int getIdUtilizador() {
+		public long getIdUtilizador() {
 		return idUtilizador;
 	}
 
@@ -61,8 +59,8 @@ public class Utilizador {
 
 	@Override
 	public String toString() {
-		return "Utilizador [idUtilizador=" + idUtilizador + ", nome=" + nome + ", email=" + email + ", password="
-				+ password + ", tipo=" + tipo + "]";
+		return "Utilizador [idUtilizador=" + idUtilizador + ", nome=" + nome + ", email=" + email
+				+ ", tipo=" + tipo + "]";
 	}
 	
 }
