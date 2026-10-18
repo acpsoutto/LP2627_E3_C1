@@ -170,8 +170,8 @@ public class Gerir {
 		// Se passou todas as verificações, criamos o utilizador.
         // O id é o tamanho da lista + 1 (1.º utilizador = 1, 2.º = 2, ...).
         // Quem se regista fica sempre como tipo Normal.
-        int id = utilizadores.size() + 1;
-        Utilizador novo = new Utilizador(id, nome, email, password, TipoUtilizador.Normal);
+        
+        Utilizador novo = new Utilizador(nome, email, password, TipoUtilizador.Normal);
         utilizadores.add(novo);
 	}
 	// US2: AUTENTICAR (LOGIN)
