@@ -138,7 +138,7 @@ public class Teste {
 				                System.out.println("Menos de 3 letras, o título foi ignorado.");
 				                titulo = "";
 				            }
-				            gr.imprimirAnuncios(gr.filtrarAnuncios(op,categoria, cor,titulo));
+				            gr.imprimirAnuncios(gr.filtrarAnuncios(op,categoriaFiltro, cor,titulo));
 						}
 					}	
 						
@@ -161,40 +161,109 @@ public class Teste {
 
 				    System.out.println("Categoria (Eletronicos, Livros, Material_Escrita, Roupa): ");
 				    String catStr = sc.nextLine().trim();
-				    categoria = Categoria.valueOf(catStr.toUpperCase());
+				    Categoria categoria = lerCategoria(catStr);
 
 				    System.out.println("Cor: ");
 				    String cor = sc.nextLine();
 
 				    if (tipoAnuncio == 1) {
-				        // Pedir data de perda (opcionalmente podes converter de String para LocalDate)
-				        gr.criarAnuncioPerdido(titulo, categoria, descricao, cor, LocalDate.now());
-				    } else if (tipoAnuncio == 2) {
+				        System.out.print("Data da perda (AAAA-MM-DD) NOTA: Se foi hoje insira ENTER ");
+				        String dataStr =sc.nextLine().trim();
+				        
+				        LocalDate dataP;
+				        if ( dataStr.isEmpty()) {
+				        	dataP = LocalDate.now();
+				        }
+				        else {
+				        	dataP = LocalDate.parse(dataStr);
+				        }
+				        gr.criarAnuncioPerdido(titulo, categoria, descricao, cor, dataP);
+				        
+				    } 
+				    
+				    else if (tipoAnuncio == 2) {
 				        System.out.println("Onde foi encontrado (Localização): ");
 				        String localizacao = sc.nextLine();
 				        gr.criarAnuncioEncontrado(titulo, categoria, descricao, cor, localizacao);
-				    } else {
-				        System.out.println("Tipo inválido!");
+				        
+				    } 
+				    
+				    else {
+				    	System.out.println("Tipo inválido!");
 				    }
 				    break;	
 				    
 				case 4:
-					/**
-					* LISTA DE CHATS E PODER ESCOLHER UM PARA CONTINUAR A FALAR;
-					*/
+					List <Chat> meusChats = gr.listarChats(gr.getPerfil());
+					gr.imprimirChats(meusChats);
+					
+					if(!meusChats.isEmpty()) {
+						System.out.print("\n Digite o ID do CHAT para abrir (0 para voltar) : ");
+						long idChat = sc.nextLong();
+						sc.nextLine();
+						
+						if (idChat !=0) {
+							gr.mostrarMensagensChat(idChat);
+							System.out.println("(Nota: Se for o dono do anúncio, escreva 'Este anuncio ficou resolvido' para fechar o anúncio)");
+							System.out.print("Escreva a sua mensagem (Enter para cancelar): ");
+							String msg = sc.nextLine();
+							if (!msg.isBlank()) {
+								gr.enviarMensagem(idChat, gr.getPerfil().getIdUtilizador(), msg);
+						}
+					}
+				}
 				break;
+				
+				case 5:
+					Utilizador u = gr.getPerfil();
+					System.out.println("\n OS MEUS DADOS PESSOAIS");
+					System.out.println("Id   : " + u.getIdUtilizador());
+					System.out.println("Nome : " + u.getNome());
+					System.out.println("Email: " + u.getEmail());
+					System.out.println("Tipo : " + u.getTipo());
+
+					System.out.print("\nDeseja atualizar os seus dados? (1- Sim / 0- Não): ");
+					int atualizar = sc.nextInt();
+					sc.nextLine();
+
+					if (atualizar == 1) {
+						System.out.print("Novo Nome: ");
+						String novoNome = sc.nextLine();
+						System.out.print("Novo Email: ");
+						String novoEmail = sc.nextLine();
+						System.out.print("Nova Password: ");
+						String novaPass = sc.nextLine();
+						gr.atualizarDadosPessoais(u.getIdUtilizador(), novoNome, novoEmail, novaPass);
+					}
+					
+				break;
+				
+					
+				case 6:
+					
+					System.out.print("Id do anúncio a eliminar: ");
+					long idEliminar = sc.nextLong();
+					sc.nextLine();
+					gr.eliminarAnuncio(idEliminar);
+					break;
 					
 				case 0:
+					gr.logout();
 					System.out.println("A fechar");
-				break;
+					break;
 					
 				default:
 					System.out.println("Opção Invalida! Tente novamente!");
-			}
-		}	
-	sc.close();
+				}
+			}	
+		}
+		
+		gr.exit();
+		sc.close();
+		System.out.println("Programa encerrado.");
 	}
-	}
+	
+	
 	private static Categoria lerCategoria(String texto) {
 		for (Categoria c : Categoria.values()) {
 			if (c.name().equalsIgnoreCase(texto.trim())) {
