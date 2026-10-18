@@ -132,6 +132,15 @@ public class Gerir {
 			    }
 		}
 		
+		public boolean verificarIdChat(long idChat, List<Chat> meusChats) {
+			for(Chat c : meusChats) {
+				if(idChat == c.getIdChat()) {
+					return true;
+				}
+			}
+			return false;
+		}
+		
 		// enviar nova mensagem num chat
 		
 		public void enviarMensagem(long idChat, long idEmissor, String texto) {
