@@ -39,6 +39,13 @@ public class Teste {
 
 					System.out.print("Email: ");
 					String email = sc.nextLine();
+					
+			        // ATUALIZADO: pede o email outra vez enquanto o formato for inválido.
+			        while (!gr.emailValido(email)) {
+			            System.out.println("Erro: Formato de email inválido (exemplo: nome@dominio.pt).");
+			            System.out.print("Email: ");
+			            email = sc.nextLine();
+			        }
 
 					if (gr.procurarPorEmail(email) != null) {
 						System.out.println("Erro: Este email já está registado no sistema!");
