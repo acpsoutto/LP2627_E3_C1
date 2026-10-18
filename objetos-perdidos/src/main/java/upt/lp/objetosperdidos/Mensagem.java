@@ -28,8 +28,6 @@ public class Mensagem {
 		return idMensagem;
 	}
 
-
-
 	public Chat getChat() {
 		return chat;
 	}

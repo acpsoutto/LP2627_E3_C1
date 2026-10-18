@@ -41,7 +41,7 @@ public class Gerir {
 		    } else {
 		        tipo = "AnuncioEncontrado";
 		    }
-		    String hql = "select a from " + tipo + " a join fetch a.publicador where a.estado = :estado";
+		    String hql = "select a from " + tipo + " a join fetch a.utilizador where a.estado = :estado";
 		    if (categoria != null) {
 		        hql = hql + " and a.categoria = :categoria";
 		    }
@@ -90,8 +90,6 @@ public class Gerir {
 		            transaction.rollback();
 		            return;
 		        }
-
-		        Utilizador dono = anuncio.getUtilizador();
 		        
 		        if (anuncio.getEstado() == Estado.RESOLVIDO) {
 		            System.out.println("Este anúncio já foi resolvido.");
@@ -133,8 +131,7 @@ public class Gerir {
 		public ArrayList<Chat> listarChats(Utilizador u) {
 			ArrayList<Chat> meusChats = new ArrayList<>();
 			for (Chat c : chats) {
-				if (c.getCriador().getIdUtilizador() == u.getIdUtilizador()
-						|| c.getInteressado().getIdUtilizador() == u.getIdUtilizador()) {
+				if (c.pertenceAoChat(u)) {
 					meusChats.add(c);
 				}
 			}
@@ -164,7 +161,7 @@ public class Gerir {
         }
 		
 		try(Session session = sessionFactory.openSession()){
-			if (procurarPorEmail(session, email)!= null) {
+			if (procurarPorEmail(email)!= null) {
 				throw new Exception("Email já registrado!");
 			}
 			Transaction t = session.beginTransaction();
@@ -178,7 +175,7 @@ public class Gerir {
 		// Procura o utilizador pelo email (null se não existir).
 		Utilizador u;
 		try(Session session = sessionFactory.openSession()){
-			u=procurarPorEmail(session,email);
+			u=procurarPorEmail(email);
 		}
 		
 		// CA03: se o email não existe OU a password está errada,
