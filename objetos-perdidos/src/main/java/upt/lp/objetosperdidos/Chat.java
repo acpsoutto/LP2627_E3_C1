@@ -6,7 +6,7 @@ import java.util.List;
 
 public class Chat {
 	
-	private int idChat;
+	private long idChat;
 	private Anuncio anuncio;
 	private LocalDate dataCriacao;
 	private List<Mensagem>mensagens = new ArrayList<>();
@@ -52,7 +52,7 @@ public class Chat {
 		}	
 	}
 
-	public int getIdChat() {
+	public long getIdChat() {
 		return idChat;
 	}
 
