@@ -1,6 +1,8 @@
 package upt.lp.objetosperdidos;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 import jakarta.persistence.*;
 
 @Entity
@@ -81,7 +83,8 @@ public class Mensagem {
 
 	@Override
 	public String toString() {
-		return ""+ emissor + ": "+ texto +" " + hora;
+		DateTimeFormatter formato = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+	    return "" + emissor + ": " + texto + " " + hora.format(formato);
 	}
 	
 	
