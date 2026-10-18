@@ -29,15 +29,15 @@ public class Utilizador {
 	@Column(nullable = false)
 	private TipoUtilizador tipo;
 	
+	@ManyToMany(mappedBy = "utilizadores")
 	private List<Chat> chats = new ArrayList<>();
 			
 	//O Hibernate exige o construtor vazio
 	public Utilizador() {
 	}
 
-	public Utilizador(int idUtilizador, String nome, String email, String password, TipoUtilizador tipo) {
+	public Utilizador( String nome, String email, String password, TipoUtilizador tipo) {
 		
-		this.idUtilizador = idUtilizador;
 		this.nome = nome;
 		this.email = email;
 		this.password = password;
@@ -67,6 +67,19 @@ public class Utilizador {
 	 public List<Chat> getChats() {
 	        return chats;
 	   }
+	 
+
+	public void setNome(String nome) {
+		this.nome = nome;
+	}
+
+	 public void setEmail(String email) {
+		 this.email = email;
+	 }
+
+	 public void setPassword(String password) {
+		 this.password = password;
+	 }
 
 	@Override
 	public String toString() {

@@ -211,13 +211,18 @@ public class Gerir {
 	//se nao encontrar nenhum, devolva null
 	
 	private Utilizador procurarPorEmail(String email) {
-		//Ciclo "para cada": u toma o valor de cada utilizador da lista, de 
-		for (Utilizador u: utilizadores) {
-			if (u.getEmail().equalsIgnoreCase(email)) {
-				return u;
-			}
-		}
-		return null;
+		//Procurar mediante a BD
+		try (Session session = sessionFactory.openSession()) {
+            List<Utilizador> lista = session
+                    .createQuery("from Utilizador u where u.email = :email", Utilizador.class)
+                    .setParameter("email", email)
+                    .getResultList();
+
+            if (lista.isEmpty()) {
+                return null;
+            }
+            return lista.get(0);
+        }
 	}
 
     // Pede à Passay para verificar a password.
@@ -225,5 +230,81 @@ public class Gerir {
     // validate(...) aplica as regras; isValid() devolve true se cumpriu todas.
     private boolean passwordValida(String password) {
         return validador.validate(new PasswordData(password)).isValid();
+    }
+    
+// MATHIAS
+    //Atualizar dados pessoais
+    //US04
+    public void atualizarDadosPessoais(int idUtilizador, String novoNome, String novoEmail, String novaPassword) {
+        if (!passwordValida(novaPassword)) {
+            System.out.println("Erro: A nova password deve conter uma maiúscula e um carácter especial.");
+            return;
+        }
+
+        Utilizador existente = procurarPorEmail(novoEmail);
+        if (existente != null && existente.getIdUtilizador() != idUtilizador) {
+            System.out.println("Erro: O novo email já existe no sistema.");
+            return;
+        }
+
+        Transaction transaction = null;
+        try (Session session = sessionFactory.openSession()) {
+            transaction = session.beginTransaction();
+
+            Utilizador u = session.get(Utilizador.class, idUtilizador);
+            if (u != null) {
+                u.setNome(novoNome);
+                u.setEmail(novoEmail);
+                u.setPassword(novaPassword);
+                System.out.println("Dados atualizados com sucesso!");
+            } else {
+                System.out.println("Utilizador não encontrado.");
+            }
+
+            transaction.commit();
+        } catch (Exception e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            e.printStackTrace();
+        }
+    }
+    //US10
+    public void reivindicarObjeto(int idAnuncioEncontrado, int idInteressado, String textoMensagem) {
+        Transaction transaction = null;
+        try (Session session = sessionFactory.openSession()) {
+            transaction = session.beginTransaction();
+
+            AnuncioEncontrado anuncio = session.get(AnuncioEncontrado.class, idAnuncioEncontrado);
+            Utilizador interessado = session.get(Utilizador.class, idInteressado);
+
+            if (anuncio == null || interessado == null) {
+                System.out.println("Anúncio ou Utilizador não encontrado.");
+                transaction.rollback();
+                return;
+            }
+
+            if (anuncio.getUtilizador().getIdUtilizador() == interessado.getIdUtilizador()) {
+                System.out.println("Erro: O criador do anúncio não pode reivindicar o seu próprio objeto.");
+                transaction.rollback();
+                return;
+            }
+
+            Chat chat = new Chat(anuncio, interessado);
+            Mensagem primeiraMsg = new Mensagem(interessado, textoMensagem);
+
+            chat.addMensagem(primeiraMsg);
+            anuncio.addChat(chat);
+
+            session.persist(chat);
+
+            transaction.commit();
+            System.out.println("Reivindicação criada com sucesso! " + chat);
+        } catch (Exception e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            e.printStackTrace();
+        }
     }
 }
