@@ -67,7 +67,7 @@ public class Mensagem {
 
 	@Override
 	public String toString() {
-		return "Mensagem [idMensagem=" + idMensagem + ", chat=" + chat + ", hora=" + hora + ", texto=" + texto + "]";
+		return ""+ emissor + ": "+ texto +" " + hora;
 	}
 	
 	
