@@ -1,13 +1,29 @@
 package upt.lp.objetosperdidos;
 
 import java.time.LocalDateTime;
+import jakarta.persistence.*;
 
+@Entity
+@Table(name = "mensagem")
 public class Mensagem {
 	
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "idMensagem")
 	private long idMensagem;
+	
+	@ManyToOne
+	@JoinColumn(name = "idChat", nullable = false)
 	private Chat chat;
+	
+	@ManyToOne
+	@JoinColumn(name = "idEmissor", nullable = false)
 	private Utilizador emissor;
+	
+	@Column(nullable = false)
 	private LocalDateTime hora;
+	
+	@Column(nullable = false, length = 500)
 	private String texto;
 	
 	

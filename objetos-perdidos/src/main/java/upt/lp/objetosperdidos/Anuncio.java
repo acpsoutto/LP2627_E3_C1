@@ -3,18 +3,46 @@ package upt.lp.objetosperdidos;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import jakarta.persistence.*;
 
+@Entity
+@Table(name = "anuncio")
+@Inheritance(strategy = InheritanceType.JOINED)
 public abstract class Anuncio {
 	
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "idAnuncio")
 	private long idAnuncio;
+	
+	@Column(nullable = false)
 	private String titulo;
+	
+	@ManyToOne
+	@JoinColumn(name = "idPublicador", nullable = false)
 	private Utilizador utilizador;
+	
+	@Enumerated(EnumType.STRING)
+	@Column(nullable = false)
 	private Categoria categoria;
+	
+	@Enumerated(EnumType.STRING)
+	@Column(nullable = false)
 	private Estado estado;
+	
+	@Column(nullable = false, length = 500)
 	private String descricao;
+	
+	@Column(nullable = false)
 	private LocalDate dataPublicacao;
+	
+	@Column(nullable = false)
 	private String cor;
+	
+	@Column
 	private LocalDate dataResolucao;
+	
+	@OneToMany(mappedBy = "anuncio", cascade = CascadeType.ALL)
 	private List <Chat> chats = new ArrayList<>();
 	
 	public Anuncio() {
