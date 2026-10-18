@@ -269,7 +269,7 @@ public class Gerir {
 		Transaction t = null;
 		try(Session session = sessionFactory.openSession()){
 			t = session.beginTransaction();
-			session.persist(new Utilizador(nome, email,password, TipoUtilizador.NORNAL));
+			session.persist(new Utilizador(nome, email,password, TipoUtilizador.NORMAL));
 			t.commit();
 		} catch(Exception e) {
 			if(t != null && t.isActive()) {
