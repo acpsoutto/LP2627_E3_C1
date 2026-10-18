@@ -198,6 +198,24 @@ public class Gerir {
 			return meusChats;
 		}
 		
+		public List<Anuncio> listarAnuncios(Utilizador u) {
+            List<Anuncio> meusAnuncios = new ArrayList<>();
+
+            try (Session session = sessionFactory.openSession()) {
+                List<Anuncio> todosOsAnuncios = session
+                        .createQuery("from Anuncio", Anuncio.class)
+                        .getResultList();
+
+
+                for (Anuncio a : todosOsAnuncios) {
+                    if (a.getUtilizador().getIdUtilizador() == u.getIdUtilizador()) {
+                        meusAnuncios.add(a);
+                    }
+                }
+            }
+            return meusAnuncios;
+        }
+		
 		public void imprimirChats(List<Chat> listaChats) {
 			if (listaChats.isEmpty()) {
 				System.out.println("Sem chats.");

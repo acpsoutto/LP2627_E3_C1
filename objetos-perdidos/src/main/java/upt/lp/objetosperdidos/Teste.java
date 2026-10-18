@@ -240,11 +240,14 @@ public class Teste {
 				
 					
 				case 6:
-					
-					System.out.print("Id do anúncio a eliminar: ");
-					long idEliminar = sc.nextLong();
-					sc.nextLine();
-					gr.eliminarAnuncio(idEliminar);
+					List <Anuncio> meusAnuncios = gr.listarAnuncios(gr.getPerfil());
+                    gr.imprimirAnuncios(meusAnuncios);
+                    if(!meusAnuncios.isEmpty()) {
+                        System.out.print("Id do anúncio a eliminar: ");
+                        long idEliminar = sc.nextLong();
+                        sc.nextLine();
+                        gr.eliminarAnuncio(idEliminar);
+                    }
 					break;
 					
 				case 0:
@@ -255,7 +258,41 @@ public class Teste {
 				default:
 					System.out.println("Opção Invalida! Tente novamente!");
 				}
-			}	
+			}
+	        /**
+	         * Menu do gestor
+	         */
+	        if(gr.getPerfil().getTipo() == TipoUtilizador.Gestor) {
+	            while(op != 0) {
+	                System.out.println("Menu Gestor");
+	                System.out.println("1- Visualizar estatísticas.");
+	                System.out.println("Opção: ");
+	                op = sc.nextInt();
+	                sc.nextLine();
+	                switch (op) {
+	                    case 1:
+	                        System.out.print("Data de início (AAAA-MM-DD) ou Enter para últimos 30 dias: ");
+	                        String dInicioStr = sc.nextLine().trim();
+	                        LocalDate inicio = dInicioStr.isEmpty() ? LocalDate.now().minusDays(30) : LocalDate.parse(dInicioStr);
+	
+	                        System.out.print("Data de fim (AAAA-MM-DD) ou Enter para hoje: ");
+	                        String dFimStr = sc.nextLine().trim();
+	                        LocalDate fim = dFimStr.isEmpty() ? LocalDate.now() : LocalDate.parse(dFimStr);
+	
+	                        gr.mostrarEstatisticas(inicio, fim);
+	                    break;
+	                    case 2:
+	                        gr.logout();
+	                        System.out.println("A fechar");
+	                    break;
+	                    default:
+	                        System.out.println("Opção Invalida! Tente novamente!");
+	                }
+                
+	            }
+            
+	        }
+			
 		}
 		
 		gr.exit();
