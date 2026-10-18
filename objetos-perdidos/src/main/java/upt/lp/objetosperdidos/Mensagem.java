@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 
 public class Mensagem {
 	
-	private int idMensagem;
+	private long idMensagem;
 	private Chat chat;
 	private Utilizador emissor;
 	private LocalDateTime hora;
@@ -24,7 +24,7 @@ public class Mensagem {
 	}
 
 
-	public int getIdMensagem() {
+	public long getIdMensagem() {
 		return idMensagem;
 	}
 
