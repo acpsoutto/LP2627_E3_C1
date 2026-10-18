@@ -182,6 +182,9 @@ public class Gerir {
 			}
 			Transaction t = session.beginTransaction();
 			session.persist(new Utilizador(nome, email,password, TipoUtilizador.Normal));
+			t.commit();
+		}
+
 	}
 	// US2: AUTENTICAR (LOGIN)
 	//------------------------------------------
