@@ -1,5 +1,6 @@
 package upt.lp.objetosperdidos;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.time.LocalDate;
@@ -173,12 +174,23 @@ public class Gerir {
         
         Utilizador novo = new Utilizador(nome, email, password, TipoUtilizador.Normal);
         utilizadores.add(novo);
+
+		
+		try(Session session = sessionFactory.openSession()){
+			if (procurarPorEmail(email)!= null) {
+				throw new Exception("Email já registrado!");
+			}
+			Transaction t = session.beginTransaction();
+			session.persist(new Utilizador(nome, email,password, TipoUtilizador.Normal));
 	}
 	// US2: AUTENTICAR (LOGIN)
 	//------------------------------------------
 	public Utilizador autenticar (String email, String password)throws Exception{
 		// Procura o utilizador pelo email (null se não existir).
-		Utilizador u= procurarPorEmail(email);
+		Utilizador u;
+		try(Session session = sessionFactory.openSession()){
+			u=procurarPorEmail(email);
+		}
 		
 		// CA03: se o email não existe OU a password está errada,
         // a mensagem é sempre "Credenciais inválidas".
@@ -270,6 +282,73 @@ public class Gerir {
             e.printStackTrace();
         }
     }
+    
+    // US07: Registar objeto encontrado
+    public void criarAnuncioEncontrado(String titulo, Categoria categoria, String descricao, String cor, String localizacao) {
+        if (sessao == null) {
+            System.out.println("Erro: Deve efetuar login para criar um anúncio.");
+            return;
+        }
+
+        if (titulo == null || titulo.isBlank() || localizacao == null || localizacao.isBlank()) {
+            System.out.println("Erro: O título e a localização são obrigatórios.");
+            return;
+        }
+
+        Transaction transaction = null;
+        try (Session session = sessionFactory.openSession()) {
+            transaction = session.beginTransaction();
+
+            // Cria o objeto AnuncioEncontrado
+            AnuncioEncontrado anuncio = new AnuncioEncontrado(sessao, titulo, categoria, descricao, cor, localizacao);
+
+            // Persiste o anúncio na base de dados
+            session.persist(anuncio);
+
+            transaction.commit();
+            System.out.println("Anúncio encontrado registado com sucesso!");
+        } catch (Exception e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            e.printStackTrace();
+        }
+    }
+    
+    // US08: Criar anúncio de objeto perdido
+    public void criarAnuncioPerdido(String titulo, Categoria categoria, String descricao, String cor, LocalDate dataPerda) {
+        if (sessao == null) {
+            System.out.println("Erro: Deve efetuar login para criar um anúncio.");
+            return;
+        }
+
+        if (titulo == null || titulo.isBlank() || descricao == null || descricao.isBlank()) {
+            System.out.println("Erro: O título e a descrição são obrigatórios.");
+            return;
+        }
+
+        Transaction transaction = null;
+        try (Session session = sessionFactory.openSession()) {
+            transaction = session.beginTransaction();
+
+            // Cria o objeto AnuncioPerdido usando o construtor adequado
+            AnuncioPerdido anuncio = new AnuncioPerdido(sessao, titulo, categoria, descricao, cor, dataPerda);
+            anuncio.setDataPerda(dataPerda);
+
+            // Persiste o anúncio na base de dados
+            session.persist(anuncio);
+
+            transaction.commit();
+            System.out.println("Anúncio perdido criado com sucesso!");
+        } catch (Exception e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            e.printStackTrace();
+        }
+    }
+    
+    
     //US10
     public void mostrarEstatisticas(LocalDate inicio, LocalDate fim) {
         try (Session session = sessionFactory.openSession()) {

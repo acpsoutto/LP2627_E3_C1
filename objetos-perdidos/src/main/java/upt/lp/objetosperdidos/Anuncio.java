@@ -6,7 +6,7 @@ import java.util.List;
 
 public abstract class Anuncio {
 	
-	private int idAnuncio;
+	private long idAnuncio;
 	private String titulo;
 	private Utilizador utilizador;
 	private Categoria categoria;
@@ -36,7 +36,7 @@ public abstract class Anuncio {
 	}
 	
 	
-	public int getIdAnuncio() {
+	public long getIdAnuncio() {
 		return idAnuncio;
 	}
 
