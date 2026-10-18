@@ -9,7 +9,7 @@ public class AnuncioPerdido extends Anuncio{
 	public AnuncioPerdido() {
 	}
 
-	public AnuncioPerdido(Utilizador utilizador, String titulo, Categoria categoria, String descricao, String cor) {
+	public AnuncioPerdido(Utilizador utilizador, String titulo, Categoria categoria, String descricao, String cor, LocalDate dataPerda) {
 		super(utilizador, titulo, categoria, descricao, cor);
 		this.dataPerda = dataPerda;
 	}
@@ -24,9 +24,7 @@ public class AnuncioPerdido extends Anuncio{
 
 	@Override
 	public String toString() {
-		return "AnuncioPerdido [dataPerda=" + dataPerda + ", getIdAnuncio()=" + getIdAnuncio() + ", getTitulo()="
-				+ getTitulo() + ", getUtilizador()=" + getUtilizador() + ", getCategoria()=" + getCategoria()
-				+ ", getEstado()=" + getEstado() + ", getCor()=" + getCor() + "]";
+		return ""+ getIdAnuncio() +"-Procura-se: " + getTitulo() +" "+ getCor() +" " +getCategoria() + " perdido no " + dataPerda + " por "+ getUtilizador();
 	}
 	
 	
