@@ -205,7 +205,8 @@ public class Teste {
 							long idChat = sc.nextLong();
 							sc.nextLine();
 							
-							if (idChat !=0) {
+							if (idChat !=0 && gr.verificarIdChat(idChat,meusChats) ) {
+
 								gr.mostrarMensagensChat(idChat);
 								System.out.println("(Nota: Se for o dono do anúncio, escreva 'Este anuncio ficou resolvido' para fechar o anúncio)");
 								System.out.print("Escreva a sua mensagem (Enter para cancelar): ");
@@ -214,6 +215,9 @@ public class Teste {
 									gr.enviarMensagem(idChat, gr.getPerfil().getIdUtilizador(), msg);
 							}
 						}
+							else {
+								System.out.println("Chat Invalido!");
+							}
 					}
 					break;
 					
