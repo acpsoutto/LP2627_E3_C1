@@ -80,7 +80,7 @@ public class Chat {
 	
 	public Utilizador getInteressado() {
 		for (Utilizador u : utilizadores) {
-			if(u != anuncio.getUtilizador()) {
+			if(u.getIdUtilizador() != anuncio.getUtilizador().getIdUtilizador()) {
 				return u;
 			}
 		} 
@@ -114,6 +114,6 @@ public class Chat {
 
 	@Override
 	public String toString() {
-		return ""+idChat+"-"+ anuncio + " conversa entre " + utilizadores;
+		return ""+idChat+" - "+ anuncio + " conversa entre " + utilizadores;
 	}
 }

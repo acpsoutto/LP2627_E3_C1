@@ -20,6 +20,7 @@ public class Teste {
 			System.out.println("1- Novo utilizador.");
 			System.out.println("2- Utilizador existente.");
 			System.out.println("0- Fechar programa");
+			System.out.println("Opção");
 			opL = sc.nextInt();
 			sc.nextLine();
 			
@@ -84,188 +85,192 @@ public class Teste {
 			 * Menu de utilizador
 			 */
 			int op = 1;
-			while(op != 0) {
-				System.out.println("Menu");
-				System.out.println("1- Mostrar anuncios de Procura-se.");
-				System.out.println("2- Mostrar anunicos de Encontrados.");
-				System.out.println("3- Criar anuncio.");
-				System.out.println("4- Visualizar mensagens.");
-				System.out.println("5- Ver e Atualizar os meus dados pessoais.");
-				System.out.println("6- Eliminar anúncio");
-				System.out.println("0- Logout.");
-				System.out.println("Opção: ");
-					
-				op = sc.nextInt();
-				sc.nextLine();
-					
-				switch(op) {
-				case 1:
-				case 2:
+			if(gr.getPerfil().getTipo() != TipoUtilizador.GESTOR) {
+				while(op != 0) {
+					System.out.println("Menu");
+					System.out.println("1- Mostrar anuncios de Procura-se.");
+					System.out.println("2- Mostrar anunicos de Encontrados.");
+					System.out.println("3- Criar anuncio.");
+					System.out.println("4- Visualizar mensagens.");
+					System.out.println("5- Ver e Atualizar os meus dados pessoais.");
+					System.out.println("6- Eliminar anúncio");
+					System.out.println("0- Logout.");
+					System.out.println("Opção: ");
 						
-					gr.imprimirAnuncios(gr.filtrarAnuncios(op,null,null,null));
-					int opt = 2;
-					
-					while(opt == 2) {
-						System.out.println("1- Reivindicar Anuncio");
-						System.out.println("2- Filtrar Pesquisa");
-						System.out.println("Outra opção- Voltar");
-						System.out.println("Opção");
-						opt = sc.nextInt();
-						sc.nextLine();
-					
-					if(opt == 1) {
-						System.out.println("Qual anuncio quer reivindicar:");
-						long Rid = sc.nextLong();
-						sc.nextLine();
-						gr.reivindicar(Rid, gr.getPerfil().getIdUtilizador());
-					}
-					if(opt == 2){
-						Categoria categoriaFiltro = null;
-						System.out.println("Categoria (Enter para não inserir):");
-						System.out.println("Eletronicos, Livros, Material_Escrita, Roupa");
-
-						String cat = sc.nextLine().trim();
-						if (!cat.isEmpty()) {
-							categoriaFiltro = lerCategoria(cat);
-						}
-						
-						System.out.println("Cor (Enter para não inserir):");
-						String cor = sc.nextLine().trim();
-						
-						 System.out.println("Texto no título (Enter para ignorar, mínimo 3 letras):");
-				         String titulo = sc.nextLine().trim();
-				            if (titulo.length() > 0 && titulo.length() < 3) {
-				                System.out.println("Menos de 3 letras, o título foi ignorado.");
-				                titulo = "";
-				            }
-				            gr.imprimirAnuncios(gr.filtrarAnuncios(op,categoriaFiltro, cor,titulo));
-						}
-					}	
-						
-				
-				break;
-					
-				case 3:
-					System.out.println("Tipo de anúncio:");
-				    System.out.println("1- Procura-se (Perdido).");
-				    System.out.println("2- Encontrado.");
-				    System.out.println("Opção: ");
-				    int tipoAnuncio = sc.nextInt();
-				    sc.nextLine();
-
-				    System.out.println("Título: ");
-				    String titulo = sc.nextLine();
-
-				    System.out.println("Descrição: ");
-				    String descricao = sc.nextLine();
-
-				    System.out.println("Categoria (Eletronicos, Livros, Material_Escrita, Roupa): ");
-				    String catStr = sc.nextLine().trim();
-				    Categoria categoria = lerCategoria(catStr);
-
-				    System.out.println("Cor: ");
-				    String cor = sc.nextLine();
-
-				    if (tipoAnuncio == 1) {
-				        System.out.print("Data da perda (AAAA-MM-DD) NOTA: Se foi hoje insira ENTER ");
-				        String dataStr =sc.nextLine().trim();
-				        
-				        LocalDate dataP;
-				        if ( dataStr.isEmpty()) {
-				        	dataP = LocalDate.now();
-				        }
-				        else {
-				        	dataP = LocalDate.parse(dataStr);
-				        }
-				        gr.criarAnuncioPerdido(titulo, categoria, descricao, cor, dataP);
-				        
-				    } 
-				    
-				    else if (tipoAnuncio == 2) {
-				        System.out.println("Onde foi encontrado (Localização): ");
-				        String localizacao = sc.nextLine();
-				        gr.criarAnuncioEncontrado(titulo, categoria, descricao, cor, localizacao);
-				        
-				    } 
-				    
-				    else {
-				    	System.out.println("Tipo inválido!");
-				    }
-				    break;	
-				    
-				case 4:
-					List <Chat> meusChats = gr.listarChats(gr.getPerfil());
-					gr.imprimirChats(meusChats);
-					
-					if(!meusChats.isEmpty()) {
-						System.out.print("\n Digite o ID do CHAT para abrir (0 para voltar) : ");
-						long idChat = sc.nextLong();
-						sc.nextLine();
-						
-						if (idChat !=0) {
-							gr.mostrarMensagensChat(idChat);
-							System.out.println("(Nota: Se for o dono do anúncio, escreva 'Este anuncio ficou resolvido' para fechar o anúncio)");
-							System.out.print("Escreva a sua mensagem (Enter para cancelar): ");
-							String msg = sc.nextLine();
-							if (!msg.isBlank()) {
-								gr.enviarMensagem(idChat, gr.getPerfil().getIdUtilizador(), msg);
-						}
-					}
-				}
-				break;
-				
-				case 5:
-					Utilizador u = gr.getPerfil();
-					System.out.println("\n OS MEUS DADOS PESSOAIS");
-					System.out.println("Id   : " + u.getIdUtilizador());
-					System.out.println("Nome : " + u.getNome());
-					System.out.println("Email: " + u.getEmail());
-					System.out.println("Tipo : " + u.getTipo());
-
-					System.out.print("\nDeseja atualizar os seus dados? (1- Sim / 0- Não): ");
-					int atualizar = sc.nextInt();
+					op = sc.nextInt();
 					sc.nextLine();
-
-					if (atualizar == 1) {
-						System.out.print("Novo Nome: ");
-						String novoNome = sc.nextLine();
-						System.out.print("Novo Email: ");
-						String novoEmail = sc.nextLine();
-						System.out.print("Nova Password: ");
-						String novaPass = sc.nextLine();
-						gr.atualizarDadosPessoais(u.getIdUtilizador(), novoNome, novoEmail, novaPass);
+						
+					switch(op) {
+					case 1:
+					case 2:
+							
+						gr.imprimirAnuncios(gr.filtrarAnuncios(op,null,null,null));
+						int opt = 2;
+						
+						while(opt == 2) {
+							System.out.println("");
+							System.out.println("1- Reivindicar Anuncio");
+							System.out.println("2- Filtrar Pesquisa");
+							System.out.println("Outra opção- Voltar");
+							System.out.println("Opção");
+							opt = sc.nextInt();
+							sc.nextLine();
+						
+						if(opt == 1) {
+							System.out.println("Qual anuncio quer reivindicar:");
+							long Rid = sc.nextLong();
+							sc.nextLine();
+							gr.reivindicar(Rid, gr.getPerfil().getIdUtilizador());
+						}
+						if(opt == 2){
+							Categoria categoriaFiltro = null;
+							System.out.println("Eletronicos, Livros, Material_Escrita, Roupa");
+							System.out.println("Categoria (Enter para não inserir):");
+	
+							String cat = sc.nextLine().trim();
+							if (!cat.isEmpty()) {
+								categoriaFiltro = lerCategoria(cat);
+							}
+							
+							System.out.println("Cor (Enter para não inserir):");
+							String cor = sc.nextLine().trim();
+							
+							 System.out.println("Texto no título (Enter para ignorar, mínimo 3 letras):");
+					         String titulo = sc.nextLine().trim();
+					            if (titulo.length() > 0 && titulo.length() < 3) {
+					                System.out.println("Menos de 3 letras, o título foi ignorado.");
+					                titulo = "";
+					            }
+					            gr.imprimirAnuncios(gr.filtrarAnuncios(op,categoriaFiltro, cor,titulo));
+							}
+						}	
+							
+					
+					break;
+						
+					case 3:
+						System.out.println("Tipo de anúncio:");
+					    System.out.println("1- Procura-se (Perdido).");
+					    System.out.println("2- Encontrado.");
+					    System.out.println("Opção: ");
+					    int tipoAnuncio = sc.nextInt();
+					    sc.nextLine();
+	
+					    System.out.println("Título: ");
+					    String titulo = sc.nextLine();
+	
+					    System.out.println("Descrição: ");
+					    String descricao = sc.nextLine();
+	
+					    System.out.println("Categoria (Eletronicos, Livros, Material_Escrita, Roupa): ");
+					    String catStr = sc.nextLine().trim();
+					    Categoria categoria = lerCategoria(catStr);
+	
+					    System.out.println("Cor: ");
+					    String cor = sc.nextLine();
+	
+					    if (tipoAnuncio == 1) {
+					        System.out.print("Data da perda (AAAA-MM-DD) NOTA: Se foi hoje insira ENTER ");
+					        String dataStr =sc.nextLine().trim();
+					        
+					        LocalDate dataP;
+					        if ( dataStr.isEmpty()) {
+					        	dataP = LocalDate.now();
+					        }
+					        else {
+					        	dataP = LocalDate.parse(dataStr);
+					        }
+					        gr.criarAnuncioPerdido(titulo, categoria, descricao, cor, dataP);
+					        
+					    } 
+					    
+					    else if (tipoAnuncio == 2) {
+					        System.out.println("Onde foi encontrado (Localização): ");
+					        String localizacao = sc.nextLine();
+					        gr.criarAnuncioEncontrado(titulo, categoria, descricao, cor, localizacao);
+					        
+					    } 
+					    
+					    else {
+					    	System.out.println("Tipo inválido!");
+					    }
+					    break;	
+					    
+					case 4:
+						List <Chat> meusChats = gr.listarChats(gr.getPerfil());
+						gr.imprimirChats(meusChats);
+						
+						if(!meusChats.isEmpty()) {
+							System.out.print("\n Digite o ID do CHAT para abrir (0 para voltar) : ");
+							long idChat = sc.nextLong();
+							sc.nextLine();
+							
+							if (idChat !=0) {
+								gr.mostrarMensagensChat(idChat);
+								System.out.println("(Nota: Se for o dono do anúncio, escreva 'Este anuncio ficou resolvido' para fechar o anúncio)");
+								System.out.print("Escreva a sua mensagem (Enter para cancelar): ");
+								String msg = sc.nextLine();
+								if (!msg.isBlank()) {
+									gr.enviarMensagem(idChat, gr.getPerfil().getIdUtilizador(), msg);
+							}
+						}
 					}
-					
-				break;
-				
-					
-				case 6:
-					List <Anuncio> meusAnuncios = gr.listarAnuncios(gr.getPerfil());
-                    gr.imprimirAnuncios(meusAnuncios);
-                    if(!meusAnuncios.isEmpty()) {
-                        System.out.print("Id do anúncio a eliminar: ");
-                        long idEliminar = sc.nextLong();
-                        sc.nextLine();
-                        gr.eliminarAnuncio(idEliminar);
-                    }
 					break;
 					
-				case 0:
-					gr.logout();
-					System.out.println("A fechar");
+					case 5:
+						Utilizador u = gr.getPerfil();
+						System.out.println("\n OS MEUS DADOS PESSOAIS");
+						System.out.println("Id   : " + u.getIdUtilizador());
+						System.out.println("Nome : " + u.getNome());
+						System.out.println("Email: " + u.getEmail());
+						System.out.println("Tipo : " + u.getTipo());
+	
+						System.out.print("\nDeseja atualizar os seus dados? (1- Sim / 0- Não): ");
+						int atualizar = sc.nextInt();
+						sc.nextLine();
+	
+						if (atualizar == 1) {
+							System.out.print("Novo Nome: ");
+							String novoNome = sc.nextLine();
+							System.out.print("Novo Email: ");
+							String novoEmail = sc.nextLine();
+							System.out.print("Nova Password: ");
+							String novaPass = sc.nextLine();
+							gr.atualizarDadosPessoais(u.getIdUtilizador(), novoNome, novoEmail, novaPass);
+						}
+						
 					break;
 					
-				default:
-					System.out.println("Opção Invalida! Tente novamente!");
+						
+					case 6:
+						List <Anuncio> meusAnuncios = gr.listarAnuncios(gr.getPerfil());
+	                    gr.imprimirAnuncios(meusAnuncios);
+	                    if(!meusAnuncios.isEmpty()) {
+	                        System.out.print("Id do anúncio a eliminar: ");
+	                        long idEliminar = sc.nextLong();
+	                        sc.nextLine();
+	                        gr.eliminarAnuncio(idEliminar);
+	                    }
+						break;
+						
+					case 0:
+						gr.logout();
+						System.out.println("A fechar");
+						break;
+						
+					default:
+						System.out.println("Opção Invalida! Tente novamente!");
+					}
 				}
 			}
-	        /**
-	         * Menu do gestor
-	         */
-	        if(gr.getPerfil().getTipo() == TipoUtilizador.Gestor) {
+		        /**
+		         * Menu do gestor
+		         */
+			else {
 	            while(op != 0) {
 	                System.out.println("Menu Gestor");
 	                System.out.println("1- Visualizar estatísticas.");
+	                System.out.println("0- Logout");
 	                System.out.println("Opção: ");
 	                op = sc.nextInt();
 	                sc.nextLine();

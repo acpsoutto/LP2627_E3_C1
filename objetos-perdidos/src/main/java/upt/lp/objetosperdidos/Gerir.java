@@ -233,7 +233,7 @@ public class Gerir {
 					return;
 				}
 				
-				System.out.println("\n--- Conversa do Anúncio: " + c.getAnuncio().getTitulo());
+				System.out.println("\nConversa do Anúncio: " + c.getAnuncio().getTitulo());
 				for (Mensagem m : c.getMensagens()) {
 					System.out.println(m);
 				}
@@ -269,7 +269,7 @@ public class Gerir {
 		Transaction t = null;
 		try(Session session = sessionFactory.openSession()){
 			t = session.beginTransaction();
-			session.persist(new Utilizador(nome, email,password, TipoUtilizador.Normal));
+			session.persist(new Utilizador(nome, email,password, TipoUtilizador.NORNAL));
 			t.commit();
 		} catch(Exception e) {
 			if(t != null && t.isActive()) {
