@@ -1,6 +1,7 @@
 package upt.lp.objetosperdidos;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Scanner;
 
 public class Teste {
@@ -8,10 +9,8 @@ public class Teste {
 	public static void main(String[] args) {
 		Scanner sc = new Scanner(System.in);
 		Gerir gr = new Gerir();
-		String email;
-		String pass;
+		gr.setup();
 		int opL= 1;
-		Categoria categoria;
 		
 		/**
 		 * Login
@@ -24,22 +23,61 @@ public class Teste {
 			opL = sc.nextInt();
 			sc.nextLine();
 			
-			System.out.println("Email: ");
-			email = sc.nextLine();
-			
-			if(opL == 1) {
-				// VERIFICAR EMAIL NO SISTEMA
+			if(opL == 0) {
+				break;
 			}
-			System.out.println("Palavra-Passe: ");
-			pass = sc.nextLine();
-			
-			if(opL == 1) {
-				//VERIFICAR PALAVRA PASSE CONFORME AS NORMAS REPTEIR ATÉ NORMAS CERTAS
-				
-				//ADICIONAR UTILIZADOR
+			if(opL < 1 || opL > 2 ) {
+				System.out.println("Opção Invalida!");
+				continue;
 			}
-			else {
-				//VERIFICAR PALAVRA-PASSE CORRETA 3/5 TENTATIVAS
+			
+			switch (opL) {
+			case 1:
+					System.out.print("Nome: ");
+					String nome = sc.nextLine();
+
+					System.out.print("Email: ");
+					String email = sc.nextLine();
+
+					if (gr.procurarPorEmail(email) != null) {
+						System.out.println("Erro: Este email já está registado no sistema!");
+						continue;
+					}
+					boolean registado = false;
+					while (!registado) {
+						System.out.print("Palavra-Passe (mínimo 1 maiúscula e 1 carácter especial): ");
+						String pass = sc.nextLine();
+						try {
+							gr.registrar(nome, email, pass);
+							System.out.println("Utilizador registado com sucesso! Faça agora o seu login.");
+							registado = true;
+						} catch (Exception e) {
+							System.out.println("Erro: " + e.getMessage());
+						}
+					}
+			continue;
+			case 2:
+				System.out.print("Email: ");
+				email = sc.nextLine();
+
+				boolean autenticado = false;
+				for (int tentativa = 1; tentativa <= 3; tentativa++) {
+					System.out.print("Palavra-Passe: ");
+					String pass = sc.nextLine();
+					try {
+						gr.autenticar(email, pass);
+						autenticado = true;
+						System.out.println("Login efetuado com sucesso! Bem-vindo(a), " + gr.getPerfil().getNome());
+						break;
+					} catch (Exception e) {
+						System.out.println(e.getMessage());
+					}
+				}
+
+				if (!autenticado) {
+					continue; // Se falhou as 3 tentativas, regressa ao menu de Login
+				}
+			break;
 			}
 			
 			/**
@@ -52,6 +90,8 @@ public class Teste {
 				System.out.println("2- Mostrar anunicos de Encontrados.");
 				System.out.println("3- Criar anuncio.");
 				System.out.println("4- Visualizar mensagens.");
+				System.out.println("5- Ver e Atualizar os meus dados pessoais.");
+				System.out.println("6- Eliminar anúncio");
 				System.out.println("0- Logout.");
 				System.out.println("Opção: ");
 					
@@ -63,35 +103,34 @@ public class Teste {
 				case 2:
 						
 					gr.imprimirAnuncios(gr.filtrarAnuncios(op,null,null,null));
-					int opt ;
+					int opt = 2;
 					
 					while(opt == 2) {
-					
-					System.out.println("1- Reivindicar Anuncio");
-					System.out.println("2- Filtrar Pesquisa");
-					System.out.println("Outra opção- Voltar");
-					System.out.println("Opção");
-					opt = sc.nextInt();
-					sc.nextLine();
+						System.out.println("1- Reivindicar Anuncio");
+						System.out.println("2- Filtrar Pesquisa");
+						System.out.println("Outra opção- Voltar");
+						System.out.println("Opção");
+						opt = sc.nextInt();
+						sc.nextLine();
 					
 					if(opt == 1) {
 						System.out.println("Qual anuncio quer reivindicar:");
-						int Rid = sc.nextInt();
+						long Rid = sc.nextLong();
 						sc.nextLine();
-						gr.reivindicar(Rid,utiID);
+						gr.reivindicar(Rid, gr.getPerfil().getIdUtilizador());
 					}
 					if(opt == 2){
+						Categoria categoriaFiltro = null;
 						System.out.println("Categoria (Enter para não inserir):");
 						System.out.println("Eletronicos, Livros, Material_Escrita, Roupa");
 
 						String cat = sc.nextLine().trim();
+						if (!cat.isEmpty()) {
+							categoriaFiltro = lerCategoria(cat);
+						}
 						
 						System.out.println("Cor (Enter para não inserir):");
 						String cor = sc.nextLine().trim();
-
-						if (!cat.isEmpty()) {
-						    categoria = Categoria.valueOf(cat.toUpperCase());
-						}
 						
 						 System.out.println("Texto no título (Enter para ignorar, mínimo 3 letras):");
 				         String titulo = sc.nextLine().trim();
@@ -155,5 +194,13 @@ public class Teste {
 		}	
 	sc.close();
 	}
+	}
+	private static Categoria lerCategoria(String texto) {
+		for (Categoria c : Categoria.values()) {
+			if (c.name().equalsIgnoreCase(texto.trim())) {
+				return c;
+			}
+		}
+		return null;
 	}
 }
