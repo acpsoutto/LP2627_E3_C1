@@ -2,6 +2,7 @@ package upt.lp.objetosperdidos;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.time.LocalDate;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
@@ -270,41 +271,36 @@ public class Gerir {
         }
     }
     //US10
-    public void reivindicarObjeto(int idAnuncioEncontrado, int idInteressado, String textoMensagem) {
-        Transaction transaction = null;
+    public void mostrarEstatisticas(LocalDate inicio, LocalDate fim) {
         try (Session session = sessionFactory.openSession()) {
-            transaction = session.beginTransaction();
+            List<Anuncio> lista = session
+                    .createQuery(
+                            "from Anuncio a " +
+                            "where a.dataPublicacao >= :inicio and a.dataPublicacao <= :fim",
+                            Anuncio.class)
+                    .setParameter("inicio", inicio)
+                    .setParameter("fim", fim)
+                    .getResultList();
 
-            AnuncioEncontrado anuncio = session.get(AnuncioEncontrado.class, idAnuncioEncontrado);
-            Utilizador interessado = session.get(Utilizador.class, idInteressado);
+            int perdidos = 0;
+            int encontrados = 0;
+            int resolvidos = 0;
 
-            if (anuncio == null || interessado == null) {
-                System.out.println("Anúncio ou Utilizador não encontrado.");
-                transaction.rollback();
-                return;
+            for (Anuncio a : lista) {
+                if (a instanceof AnuncioPerdido) {
+                    perdidos++;
+                } else if (a instanceof AnuncioEncontrado) {
+                    encontrados++;
+                }
+                if (a.getEstado() == Estado.RESOLVIDO) {
+                    resolvidos++;
+                }
             }
 
-            if (anuncio.getUtilizador().getIdUtilizador() == interessado.getIdUtilizador()) {
-                System.out.println("Erro: O criador do anúncio não pode reivindicar o seu próprio objeto.");
-                transaction.rollback();
-                return;
-            }
-
-            Chat chat = new Chat(anuncio, interessado);
-            Mensagem primeiraMsg = new Mensagem(interessado, textoMensagem);
-
-            chat.addMensagem(primeiraMsg);
-            anuncio.addChat(chat);
-
-            session.persist(chat);
-
-            transaction.commit();
-            System.out.println("Reivindicação criada com sucesso! " + chat);
-        } catch (Exception e) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
-            e.printStackTrace();
+            System.out.println("\n--- Estatísticas (" + inicio + " a " + fim + ") ---");
+            System.out.println("Objetos Perdidos: " + perdidos);
+            System.out.println("Objetos Encontrados: " + encontrados);
+            System.out.println("Objetos com Match (Resolvidos): " + resolvidos);
         }
     }
 }
