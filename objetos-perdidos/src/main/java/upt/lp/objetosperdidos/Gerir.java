@@ -301,7 +301,7 @@ public class Gerir {
 	//Pecorrer a lista e devolve o utilizador com este email
 	//se nao encontrar nenhum, devolva null
 	
-	private Utilizador procurarPorEmail(String email) {
+	public Utilizador procurarPorEmail(String email) {
 		//Procurar mediante a BD
 		try (Session session = sessionFactory.openSession()) {
             List<Utilizador> lista = session
