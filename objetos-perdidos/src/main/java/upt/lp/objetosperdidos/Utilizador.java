@@ -13,7 +13,7 @@ public class Utilizador {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "idUtilizador")
-	private int idUtilizador;
+	private long idUtilizador;
 	
 	@Column (nullable = false)
 	private String nome;
@@ -37,14 +37,12 @@ public class Utilizador {
 	}
 
 	public Utilizador( String nome, String email, String password, TipoUtilizador tipo) {
-		
 		this.nome = nome;
 		this.email = email;
 		this.password = password;
 		this.tipo = tipo;
 	}
-
-	public int getIdUtilizador() {
+		public long getIdUtilizador() {
 		return idUtilizador;
 	}
 

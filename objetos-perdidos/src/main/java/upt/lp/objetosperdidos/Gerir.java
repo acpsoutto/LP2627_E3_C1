@@ -17,7 +17,6 @@ public class Gerir {
 	private ArrayList<Chat> chats = new ArrayList<>();
 	
 //UTILIZADOR - alterar 2 sprint
-	private ArrayList<Utilizador> utilizadores = new ArrayList<>();
 	private Utilizador sessao = null;
 	private int tentativasFalhadas = 0; //nao esta do diagrama
 	// Validador da Passay: define as regras da password.
@@ -157,28 +156,29 @@ public class Gerir {
 		if (nome.isBlank() || email.isBlank()|| password.isBlank()) {
 			throw new Exception("Nome, email e password são obrigatorios.");	
 		}
-		// CA02: não pode haver duas contas com o mesmo email.
-        // procurarPorEmail devolve null se o email não existir ainda.	
-		if (procurarPorEmail(email)!= null) {
-			throw new Exception("Email já registrado!");
-		}
         // CA03 e CA04: a password tem de ter maiúscula e carácter especial.
         // Se não tiver, mostramos uma mensagem de erro clara.
 		if (!passwordValida(password)) {
             throw new Exception("A password deve ter pelo menos uma maiúscula e um carácter especial.");
         }
-		// Se passou todas as verificações, criamos o utilizador.
-        // O id é o tamanho da lista + 1 (1.º utilizador = 1, 2.º = 2, ...).
-        // Quem se regista fica sempre como tipo Normal.
-        int id = utilizadores.size() + 1;
-        Utilizador novo = new Utilizador(id, nome, email, password, TipoUtilizador.Normal);
-        utilizadores.add(novo);
+		
+		try(Session session = sessionFactory.openSession()){
+			if (procurarPorEmail(session, email)!= null) {
+				throw new Exception("Email já registrado!");
+			}
+			Transaction t = session.beginTransaction();
+			session.persist(new Utilizador(nome, email,password, TipoUtilizador.Normal));
+			t.commit();
+		}
 	}
 	// US2: AUTENTICAR (LOGIN)
 	//------------------------------------------
 	public Utilizador autenticar (String email, String password)throws Exception{
 		// Procura o utilizador pelo email (null se não existir).
-		Utilizador u= procurarPorEmail(email);
+		Utilizador u;
+		try(Session session = sessionFactory.openSession()){
+			u=procurarPorEmail(session,email);
+		}
 		
 		// CA03: se o email não existe OU a password está errada,
         // a mensagem é sempre "Credenciais inválidas".
