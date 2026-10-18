@@ -1,5 +1,6 @@
 package upt.lp.objetosperdidos;
 
+import java.time.LocalDate;
 import java.util.Scanner;
 
 public class Teste {
@@ -106,30 +107,38 @@ public class Teste {
 				break;
 					
 				case 3:
-					System.out.println("Tipo de anunico:");
-					System.out.println("1- Procura-se.");
-					System.out.println("2- Encontrado");
-					System.out.println("Opção: ");
-						
-					int opl = sc.nextInt();
-					sc.nextLine();
-						
-					/**
-					* Para ambos pedir:
-					* Titulo, descrição, categoria,cor.
-					*/
-						
-					if(op == 2 ) {
-						System.out.println("Onde foi encontrado:");
-						String localizacao = sc.nextLine();
-					}
-						
-					/**
-					* MOSTRAR POSSIVEIS ANUNICOS DO ARTIGO QUE ESTAMOS A TENTAR CRIAR (MATCH SYSTEM)
-					* PERMITIR ESCOLHER ENTRE CRIAR OU REVEENDICAR ANUNCIO
-					* 
-					*/
-				break;		
+					System.out.println("Tipo de anúncio:");
+				    System.out.println("1- Procura-se (Perdido).");
+				    System.out.println("2- Encontrado.");
+				    System.out.println("Opção: ");
+				    int tipoAnuncio = sc.nextInt();
+				    sc.nextLine();
+
+				    System.out.println("Título: ");
+				    String titulo = sc.nextLine();
+
+				    System.out.println("Descrição: ");
+				    String descricao = sc.nextLine();
+
+				    System.out.println("Categoria (Eletronicos, Livros, Material_Escrita, Roupa): ");
+				    String catStr = sc.nextLine().trim();
+				    categoria = Categoria.valueOf(catStr.toUpperCase());
+
+				    System.out.println("Cor: ");
+				    String cor = sc.nextLine();
+
+				    if (tipoAnuncio == 1) {
+				        // Pedir data de perda (opcionalmente podes converter de String para LocalDate)
+				        gr.criarAnuncioPerdido(titulo, categoria, descricao, cor, LocalDate.now());
+				    } else if (tipoAnuncio == 2) {
+				        System.out.println("Onde foi encontrado (Localização): ");
+				        String localizacao = sc.nextLine();
+				        gr.criarAnuncioEncontrado(titulo, categoria, descricao, cor, localizacao);
+				    } else {
+				        System.out.println("Tipo inválido!");
+				    }
+				    break;	
+				    
 				case 4:
 					/**
 					* LISTA DE CHATS E PODER ESCOLHER UM PARA CONTINUAR A FALAR;
