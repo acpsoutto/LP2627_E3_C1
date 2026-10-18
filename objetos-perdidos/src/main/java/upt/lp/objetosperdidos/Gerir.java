@@ -7,7 +7,6 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.cfg.Configuration;
-import org.hibernate.query.Query;
 
 import org.passay.*; //password e ver uma bibliteca para o email
 
@@ -44,40 +43,34 @@ public class Gerir {
 	
 	// Métodos para Filtrar, Imprimir e Reivindicar anúncios
 	
-	public List<Anuncio> filtrarAnuncios(int op, Categoria categoria, String cor,String titulo) {
-		 String tipo;
-		    if (op == 1) {
-		        tipo = "AnuncioPerdido";
-		    } else {
-		        tipo = "AnuncioEncontrado";
-		    }
-		    String hql = "select a from " + tipo + " a join fetch a.utilizador where a.estado = :estado";
-		    if (categoria != null) {
-		        hql = hql + " and a.categoria = :categoria";
-		    }
-		    if (cor != null && !cor.isEmpty()) {
-		        hql = hql + " and lower(a.cor) like :cor";
-		    }
-		    if (titulo != null && !titulo.isEmpty()) {
-		        hql = hql + " and lower(a.titulo) like :titulo";
-		    }
-		    hql = hql + " order by a.dataPublicacao desc";
-		    try (Session session = sessionFactory.openSession()) {
-		        Query<Anuncio> query = session.createQuery(hql, Anuncio.class);
-		        query.setParameter("estado", Estado.PENDENTE);
+	public List<Anuncio> filtrarAnuncios(int op, Categoria categoria, String cor, String titulo) {
+        String tipo;
+        if (op == 1) {
+            tipo = "AnuncioPerdido";
+        } else {
+            tipo = "AnuncioEncontrado";
+        }
+        String hql = "select a from " + tipo + " a join fetch a.utilizador where a.estado = :estado order by a.dataPublicacao desc";
 
-		        if (categoria != null) {
-		            query.setParameter("categoria", categoria);
-		        }
-		        if (cor != null && !cor.isEmpty()) {
-		            query.setParameter("cor", "%" + cor.toLowerCase() + "%");
-		        }
-		        if (titulo != null && !titulo.isEmpty()) {
-		            query.setParameter("titulo", "%" + titulo.toLowerCase() + "%");
-		        }
-		        return query.getResultList();
-		    }
-		}
+        try (Session session = sessionFactory.openSession()) {
+            List<Anuncio> lista = session
+                    .createQuery(hql, Anuncio.class)
+                    .setParameter("estado", Estado.PENDENTE)
+                    .getResultList();
+
+            if (categoria != null) {
+                lista.removeIf(a -> a.getCategoria() != categoria);
+            }
+            if (cor != null && !cor.isEmpty()) {
+                lista.removeIf(a -> !a.getCor().toLowerCase().contains(cor.toLowerCase()));
+            }
+            if (titulo != null && !titulo.isEmpty()) {
+                lista.removeIf(a -> !a.getTitulo().toLowerCase().contains(titulo.toLowerCase()));
+            }
+
+            return lista;
+        }
+	}
 
 		public void imprimirAnuncios(List<Anuncio> anuncios) {
 		    if (anuncios.isEmpty()) {
@@ -88,7 +81,7 @@ public class Gerir {
 		    }
 		}
 
-		public void revindicar(long anuncioID, long utiID) {
+		public void reivindicar(long anuncioID, long utiID) {
 			Transaction transaction = null;
 			try (Session session = sessionFactory.openSession()) {
 		        transaction = session.beginTransaction();
@@ -251,16 +244,23 @@ public class Gerir {
 		if (!passwordValida(password)) {
             throw new Exception("A password deve ter pelo menos uma maiúscula e um carácter especial.");
         }
+		if (procurarPorEmail(email) != null) {
+			throw new Exception("Email já registado!");
+		}
 		
+		Transaction t = null;
 		try(Session session = sessionFactory.openSession()){
-			if (procurarPorEmail(email)!= null) {
-				throw new Exception("Email já registrado!");
-			}
-			Transaction t = session.beginTransaction();
+			t = session.beginTransaction();
 			session.persist(new Utilizador(nome, email,password, TipoUtilizador.Normal));
 			t.commit();
+		} catch(Exception e) {
+			if(t != null && t.isActive()) {
+				t.rollback();
+			}
+			throw e;
 		}
 	}
+	
 	// US2: AUTENTICAR (LOGIN)
 	//------------------------------------------
 	public Utilizador autenticar (String email, String password)throws Exception{
@@ -354,7 +354,7 @@ public class Gerir {
 
             transaction.commit();
         } catch (Exception e) {
-            if (transaction != null) {
+            if (transaction != null && transaction.isActive()) {
                 transaction.rollback();
             }
             e.printStackTrace();
@@ -419,13 +419,32 @@ public class Gerir {
             transaction.commit();
             System.out.println("Anúncio perdido criado com sucesso!");
         } catch (Exception e) {
-            if (transaction != null) {
+            if (transaction != null && transaction.isActive()) {
                 transaction.rollback();
             }
             e.printStackTrace();
         }
     }
     
+    public void eliminarAnuncio(long idAnuncio) {
+		Transaction transaction = null;
+		try (Session session = sessionFactory.openSession()) {
+			transaction = session.beginTransaction();
+			Anuncio anuncio = session.get(Anuncio.class, idAnuncio);
+			if (anuncio != null) {
+				session.remove(anuncio);
+				System.out.println("Anúncio #" + idAnuncio + " eliminado com sucesso.");
+			} else {
+				System.out.println("Anúncio não encontrado.");
+			}
+			transaction.commit();
+		} catch (Exception e) {
+			if (transaction != null && transaction.isActive()) {
+				transaction.rollback();
+			}
+			e.printStackTrace();
+		}
+	}
     
     //US10
     public void mostrarEstatisticas(LocalDate inicio, LocalDate fim) {

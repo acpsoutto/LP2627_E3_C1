@@ -67,7 +67,7 @@ public class Teste {
 					
 					while(opt == 2) {
 					
-					System.out.println("1- Revendicar Anuncio");
+					System.out.println("1- Reivindicar Anuncio");
 					System.out.println("2- Filtrar Pesquisa");
 					System.out.println("Outra opção- Voltar");
 					System.out.println("Opção");
@@ -75,10 +75,10 @@ public class Teste {
 					sc.nextLine();
 					
 					if(opt == 1) {
-						System.out.println("Qual anuncio quer revendicar:");
+						System.out.println("Qual anuncio quer reivindicar:");
 						int Rid = sc.nextInt();
 						sc.nextLine();
-						gr.revindicar(Rid,utiID);
+						gr.reivindicar(Rid,utiID);
 					}
 					if(opt == 2){
 						System.out.println("Categoria (Enter para não inserir):");
