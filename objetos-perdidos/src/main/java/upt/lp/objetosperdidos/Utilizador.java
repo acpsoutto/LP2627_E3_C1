@@ -29,10 +29,13 @@ public class Utilizador {
 	@Column(nullable = false)
 	private TipoUtilizador tipo;
 	
+	@OneToMany(mappedBy = "utilizador", cascade = CascadeType.PERSIST)
+	private List<Anuncio> anuncios = new ArrayList<>();
+	
 	@ManyToMany(mappedBy = "utilizadores")
 	private List<Chat> chats = new ArrayList<>();
 			
-	//O Hibernate exige o construtor vazio
+	
 	public Utilizador() {
 	}
 
@@ -42,7 +45,8 @@ public class Utilizador {
 		this.password = password;
 		this.tipo = tipo;
 	}
-		public long getIdUtilizador() {
+	
+	public long getIdUtilizador() {
 		return idUtilizador;
 	}
 
@@ -62,9 +66,14 @@ public class Utilizador {
 		return tipo;
 	}
 	
-	 public List<Chat> getChats() {
-	        return chats;
-	   }
+	
+	public List<Anuncio> getAnuncios() {
+		return anuncios;
+	}
+	
+	public List<Chat> getChats() {
+		return chats;
+	}
 	 
 
 	public void setNome(String nome) {
@@ -78,11 +87,11 @@ public class Utilizador {
 	 public void setPassword(String password) {
 		 this.password = password;
 	 }
+	 
 
 	@Override
 	public String toString() {
-		return "ID: " + idUtilizador + "Nome: " + nome + " E-mail: " + email + ", Password: "
-				+ password;
+		return "Nome: " + nome + " E-mail: " + email + ")";
 	}
 	
 }

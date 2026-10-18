@@ -1,7 +1,14 @@
 package upt.lp.objetosperdidos;
 
+import jakarta.persistence.*;
+
+
+@Entity
+@Table(name = "anuncio_encontrado")
 public class AnuncioEncontrado extends Anuncio {
 	
+	
+	@Column(nullable = false)
 	private String localizacao;
 
 	public AnuncioEncontrado() {

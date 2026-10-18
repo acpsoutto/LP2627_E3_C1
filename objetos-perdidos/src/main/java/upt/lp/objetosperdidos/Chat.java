@@ -3,14 +3,36 @@ package upt.lp.objetosperdidos;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import jakarta.persistence.*;
 
+@Entity
+@Table(name = "chat")
 public class Chat {
 	
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "idChat")
 	private long idChat;
+	
+	@ManyToOne
+	@JoinColumn(name = "idAnuncio", nullable = false)
 	private Anuncio anuncio;
+	
+	@Column(nullable = false)
 	private LocalDate dataCriacao;
+	
+	@OneToMany(mappedBy = "chat", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	private List<Mensagem>mensagens = new ArrayList<>();
+	
+	
+	@ManyToMany(fetch = FetchType.EAGER)
+	@JoinTable(
+		name = "chat_utilizador",
+		joinColumns = @JoinColumn(name = "idChat"),
+		inverseJoinColumns = @JoinColumn(name = "idUtilizador")
+	)
 	private List<Utilizador> utilizadores = new ArrayList<>();
+	
 	
 	public Chat() {
 	}
@@ -51,6 +73,20 @@ public class Chat {
             anuncio.setDataResolucao(LocalDate.now());
 		}	
 	}
+	
+	public Utilizador getCriador() {
+		return anuncio.getUtilizador();
+	}
+	
+	public Utilizador getInteressado() {
+		for (Utilizador u : utilizadores) {
+			if(u != anuncio.getUtilizador()) {
+				return u;
+			}
+		} 
+		return null;
+	}
+	
 
 	public long getIdChat() {
 		return idChat;

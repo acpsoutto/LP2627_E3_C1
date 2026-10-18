@@ -1,9 +1,13 @@
 package upt.lp.objetosperdidos;
 	
 import java.time.LocalDate;
-	
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "anuncio_perdido")
 public class AnuncioPerdido extends Anuncio{
 	
+	@Column(nullable = false)
 	private LocalDate dataPerda;
 
 	public AnuncioPerdido() {
