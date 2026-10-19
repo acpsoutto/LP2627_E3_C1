@@ -9,7 +9,6 @@ import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.query.Query;
-import java.util.ArrayList;
 import org.passay.*; //password e ver uma bibliteca para o email
 
 public class Gerir {
@@ -237,38 +236,44 @@ public class Gerir {
 // MATHIAS
     //Atualizar dados pessoais
     //US04
-    public void atualizarDadosPessoais(int idUtilizador, String novoNome, String novoEmail, String novaPassword) {
-        if (!passwordValida(novaPassword)) {
-            System.out.println("Erro: A nova password deve conter uma maiúscula e um carácter especial.");
-            return;
+    public void atualizarDadosPessoais(long idUtilizador, String novoNome, String novoEmail, String novaPassword)throws Exception {
+    	if (novoNome==null||novoNome.isBlank() || novoEmail==null||novoEmail.isBlank()||novaPassword==null|| novaPassword.isBlank()) {
+			throw new Exception("Nome, email e password são obrigatorios.");	
+		}
+    	if (!passwordValida(novaPassword)) {
+            throw new Exception("Erro: A nova password deve conter uma maiúscula e um carácter especial.");
+            
         }
+        
 
         Utilizador existente = procurarPorEmail(novoEmail);
         if (existente != null && existente.getIdUtilizador() != idUtilizador) {
-            System.out.println("Erro: O novo email já existe no sistema.");
-            return;
+        	throw new Exception("Erro: O novo email já existe no sistema.");
+            
         }
 
         Transaction transaction = null;
         try (Session session = sessionFactory.openSession()) {
-            transaction = session.beginTransaction();
+        	Utilizador u = session.get(Utilizador.class, idUtilizador);
+        	
+        	if (u==null) {
+        		throw new Exception("Utilizador não encontrado");
+        	}
+        	transaction = session.beginTransaction();
 
-            Utilizador u = session.get(Utilizador.class, idUtilizador);
-            if (u != null) {
-                u.setNome(novoNome);
-                u.setEmail(novoEmail);
-                u.setPassword(novaPassword);
-                System.out.println("Dados atualizados com sucesso!");
-            } else {
-                System.out.println("Utilizador não encontrado.");
-            }
+             u.setNome(novoNome);
+             u.setEmail(novoEmail);
+             u.setPassword(novaPassword);
+             transaction.commit();
+             System.out.println("Dados atualizados com sucesso!");
+            
 
-            transaction.commit();
+            
         } catch (Exception e) {
-            if (transaction != null) {
+            if (transaction != null && transaction.isActive()) {
                 transaction.rollback();
             }
-            e.printStackTrace();
+            throw e;
         }
     }
     
@@ -340,7 +345,11 @@ public class Gerir {
     
     //US10
     public void mostrarEstatisticas(LocalDate inicio, LocalDate fim) {
-        try (Session session = sessionFactory.openSession()) {
+        if (inicio !=null && fim != null && inicio.isAfter(fim)) {
+        	throw new IllegalArgumentException("A data de inicio não pode ser posterior a data de fim");
+        }
+    	
+    	try (Session session = sessionFactory.openSession()) {
             List<Anuncio> lista = session
                     .createQuery(
                             "from Anuncio a " +
@@ -371,4 +380,6 @@ public class Gerir {
             System.out.println("Objetos com Match (Resolvidos): " + resolvidos);
         }
     }
+    
+    
 }
