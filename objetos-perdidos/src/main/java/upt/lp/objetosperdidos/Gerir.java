@@ -202,7 +202,9 @@ public class Gerir {
 				for (Chat c : todosOsChats) {
 					if (c.getCriador().getIdUtilizador() == u.getIdUtilizador()
 							|| c.getInteressado().getIdUtilizador() == u.getIdUtilizador()) {
-						meusChats.add(c);
+						if(c.getAnuncio().getEstado() == Estado.PENDENTE) {
+							meusChats.add(c);
+						}
 					}
 				}
 			}
