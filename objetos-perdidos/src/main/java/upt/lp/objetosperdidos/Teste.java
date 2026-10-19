@@ -268,7 +268,6 @@ public class Teste {
 						System.out.println("Id   : " + u.getIdUtilizador());
 						System.out.println("Nome : " + u.getNome());
 						System.out.println("Email: " + u.getEmail());
-						System.out.println("Tipo : " + u.getTipo());
 	
 						System.out.print("\nDeseja atualizar os seus dados? (1- Sim / 0- Não): ");
 						int atualizar = sc.nextInt();
