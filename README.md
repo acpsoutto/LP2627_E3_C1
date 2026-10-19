@@ -105,9 +105,10 @@ UPDATE utilizador SET tipo = 'GESTOR' WHERE email = 'gestor@exemplo.pt';
 
 ## Modelo de domínio
 
-Diagrama de classes e modelo relacional:
+###Diagrama de classes 
+//![Diagrama de classes](docs/diagrama-classes.png)/ 
 
-//![Diagrama de classes](docs/diagrama-classes.png)/ - colocar os diagramas
+modelo relacional:
 //![Modelo relacional](docs/modelo-relacional.png)/
 
 ### Entidades principais
