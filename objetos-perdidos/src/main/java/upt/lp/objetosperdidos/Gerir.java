@@ -259,7 +259,7 @@ public class Gerir {
 		
 		/**
 		 * Lista os chats em que um utilizador participa, como dono do anúncio
-		 * ou como interessado.
+		 * ou como interessado, que estejam no estado pendente.
 		 *
 		 * @param u o utilizador
 		 * @return a lista de chats do utilizador (vazia se não tiver nenhum)
@@ -479,7 +479,7 @@ public class Gerir {
      * Atualiza o nome, o email e a password de um utilizador.
      * <p>
      * A atualização é recusada (e nada é gravado) se o email tiver formato inválido,
-     * se a password não cumprir as regras ou se o email já pertencer a outro utilizador.
+     * se a password não cumprir as regras ou se o novo email já pertencer a outro utilizador.
      * Se o utilizador atualizado for o que está em sessão, os dados da sessão também
      * são atualizados, para o perfil mostrar logo os valores novos.
      *
