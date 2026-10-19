@@ -168,7 +168,7 @@ public class Utilizador {
 	 */
 	@Override
 	public String toString() {
-		return "Nome: " + nome + " E-mail: " + email + ")";
+		return "Nome: " + nome + " E-mail: " + email ;
 	}
 	
 }
