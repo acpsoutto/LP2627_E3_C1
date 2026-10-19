@@ -32,7 +32,7 @@ public abstract class Anuncio {
 	private int idAnuncio;
 	
 	/** Título do anúncio. Obrigatório. */
-	@Column(nullable = false)
+	@Column(nullable = false, length = 100)
 	private String titulo;
 	
 	/** Utilizador que publicou o anúncio. Obrigatório. */
@@ -42,12 +42,12 @@ public abstract class Anuncio {
 	
 	/** Categoria do objeto. Guardada na base de dados como texto. */
 	@Enumerated(EnumType.STRING)
-	@Column(nullable = false)
+	@Column(nullable = false, length = 20)
 	private Categoria categoria;
 	
 	/** Estado do anúncio (PENDENTE ou RESOLVIDO). Guardado na base de dados como texto. */
 	@Enumerated(EnumType.STRING)
-	@Column(nullable = false)
+	@Column(nullable = false, length = 10)
 	private Estado estado;
 	
 	/** Descrição do objeto. Obrigatória, com um máximo de 500 caracteres. */
@@ -59,7 +59,7 @@ public abstract class Anuncio {
 	private LocalDate dataPublicacao;
 	
 	/** Cor do objeto. Obrigatória. */
-	@Column(nullable = false)
+	@Column(nullable = false, length = 30)
 	private String cor;
 	
 	/** Data em que o anúncio foi resolvido. Fica vazia enquanto o anúncio estiver pendente. */
