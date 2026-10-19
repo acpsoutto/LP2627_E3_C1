@@ -129,7 +129,7 @@ public class Teste {
 						
 						if(opt == 1) {
 							System.out.println("Qual anuncio quer reivindicar:");
-							long Rid = sc.nextLong();
+							int Rid = sc.nextInt();
 							sc.nextLine();
 							gr.reivindicar(Rid, gr.getPerfil().getIdUtilizador());
 						}
@@ -210,7 +210,7 @@ public class Teste {
 					    switch (opcao) {
 					    case 1:
 					    	System.out.println("Qual anuncio quer reivindicar:");
-							long Rid = sc.nextLong();
+							int Rid = sc.nextInt();
 							sc.nextLine();
 							gr.reivindicar(Rid, gr.getPerfil().getIdUtilizador());
 					    break;
@@ -247,7 +247,7 @@ public class Teste {
 						
 						if(!meusChats.isEmpty()) {
 							System.out.print("\n Digite o ID do CHAT para abrir (0 para voltar) : ");
-							long idChat = sc.nextLong();
+							int idChat = sc.nextInt();
 							sc.nextLine();
 							
 							if (idChat !=0 && gr.verificarIdChat(idChat,meusChats) ) {
@@ -295,7 +295,7 @@ public class Teste {
 	                    gr.imprimirAnuncios(meusAnuncios);
 	                    if(!meusAnuncios.isEmpty()) {
 	                        System.out.print("Id do anúncio a eliminar: ");
-	                        long idEliminar = sc.nextLong();
+	                        int idEliminar = sc.nextInt();
 	                        sc.nextLine();
 	                        gr.eliminarAnuncio(idEliminar);
 	                    }
