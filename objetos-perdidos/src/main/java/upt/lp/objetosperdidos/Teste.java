@@ -324,19 +324,25 @@ public class Teste {
 	                        System.out.print("Data de início (AAAA-MM-DD) ou Enter para últimos 30 dias: ");
 	                        String dInicioStr = sc.nextLine().trim();
 	                        LocalDate inicio = dInicioStr.isEmpty() ? LocalDate.now().minusDays(30) : LocalDate.parse(dInicioStr);
-	
-	                        System.out.print("Data de fim (AAAA-MM-DD) ou Enter para hoje: ");
-	                        String dFimStr = sc.nextLine().trim();
-	                        LocalDate fim = dFimStr.isEmpty() ? LocalDate.now() : LocalDate.parse(dFimStr);
-	
+	                        
+	                        LocalDate fim;
+	                        if(!dInicioStr.isEmpty()) {
+	                        	System.out.print("Data de fim (AAAA-MM-DD) ou Enter para hoje: ");
+	 	                        String dFimStr = sc.nextLine().trim();
+	 	                        fim = dFimStr.isEmpty() ? LocalDate.now() : LocalDate.parse(dFimStr);
+	                        }else {
+	                        	fim = LocalDate.now();
+	                        }
+
 	                        gr.mostrarEstatisticas(inicio, fim);
 	                    break;
-	                    case 2:
+	                    case 0:
 	                        gr.logout();
 	                        System.out.println("A fechar");
 	                    break;
 	                    default:
 	                        System.out.println("Opção Invalida! Tente novamente!");
+	                    break;
 	                }
                 
 	            }
