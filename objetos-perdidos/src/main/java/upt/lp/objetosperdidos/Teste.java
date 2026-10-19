@@ -162,6 +162,11 @@ public class Teste {
 					    System.out.println("Opção: ");
 					    int tipoAnuncio = sc.nextInt();
 					    sc.nextLine();
+					    
+					    if(tipoAnuncio<1 || tipoAnuncio >2) {
+					    	System.out.println("Erro- Tipo Invalido!");
+					    	break;
+					    }
 	
 					    System.out.println("Título: ");
 					    String titulo = sc.nextLine();
@@ -175,33 +180,62 @@ public class Teste {
 	
 					    System.out.println("Cor: ");
 					    String cor = sc.nextLine();
-	
-					    if (tipoAnuncio == 1) {
-					        System.out.print("Data da perda (AAAA-MM-DD) NOTA: Se foi hoje insira ENTER ");
-					        String dataStr =sc.nextLine().trim();
-					        
-					        LocalDate dataP;
-					        if ( dataStr.isEmpty()) {
-					        	dataP = LocalDate.now();
-					        }
-					        else {
-					        	dataP = LocalDate.parse(dataStr);
-					        }
-					        gr.criarAnuncioPerdido(titulo, categoria, descricao, cor, dataP);
-					        
-					    } 
 					    
-					    else if (tipoAnuncio == 2) {
-					        System.out.println("Onde foi encontrado (Localização): ");
-					        String localizacao = sc.nextLine();
-					        gr.criarAnuncioEncontrado(titulo, categoria, descricao, cor, localizacao);
-					        
-					    } 
-					    
-					    else {
-					    	System.out.println("Tipo inválido!");
+					    int opcao = -1;
+					    while(opcao > 1 || opcao < 0) {
+					    	int tipoAnuncioTemp;
+					    	if(tipoAnuncio == 1) {
+					    		tipoAnuncioTemp = 2;
+					    	}else {
+					    		tipoAnuncioTemp = 1;
+					    	}
+					    	List<Anuncio> possiveisAnuncios = gr.filtrarAnuncios(tipoAnuncioTemp,categoria,cor ,titulo);
+					    	if(possiveisAnuncios.isEmpty()) {
+					    		opcao = 0;	
+					    	}else {
+							    System.out.println("Possiveis anunicos:");
+								gr.imprimirAnuncios(gr.filtrarAnuncios(tipoAnuncioTemp,categoria,cor ,titulo));
+								
+								System.out.println("Um destes anuncios corresponde ao que queria criar? (1-Sim / 0-Não).");
+								System.out.println("Opção: ");
+								opcao = sc.nextInt();
+								sc.nextLine();
+					    	}
 					    }
-					    break;	
+					    
+					    switch (opcao) {
+					    case 1:
+					    	System.out.println("Qual anuncio quer reivindicar:");
+							long Rid = sc.nextLong();
+							sc.nextLine();
+							gr.reivindicar(Rid, gr.getPerfil().getIdUtilizador());
+					    break;
+					    
+					    case 0:
+						    if (tipoAnuncio == 1) {
+						        System.out.print("Data da perda (AAAA-MM-DD) NOTA: Se foi hoje insira ENTER ");
+						        String dataStr =sc.nextLine().trim();
+						        
+						        LocalDate dataP;
+						        if ( dataStr.isEmpty()) {
+						        	dataP = LocalDate.now();
+						        }
+						        else {
+						        	dataP = LocalDate.parse(dataStr);
+						        }
+						        gr.criarAnuncioPerdido(titulo, categoria, descricao, cor, dataP);
+						        
+						    } 
+						    
+						    else if (tipoAnuncio == 2) {
+						        System.out.println("Onde foi encontrado (Localização): ");
+						        String localizacao = sc.nextLine();
+						        gr.criarAnuncioEncontrado(titulo, categoria, descricao, cor, localizacao);
+						        
+						    } 
+					    break;
+					    }
+					break;	
 					    
 					case 4:
 						List <Chat> meusChats = gr.listarChats(gr.getPerfil());
