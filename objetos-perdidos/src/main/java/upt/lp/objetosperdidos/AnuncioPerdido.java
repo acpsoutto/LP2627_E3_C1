@@ -30,14 +30,5 @@ public class AnuncioPerdido extends Anuncio{
 	public String toString() {
 		return ""+ getIdAnuncio() +"-Procura-se: " + getTitulo() +" "+ getCor() +" " +getCategoria() + " perdido no " + dataPerda + " por "+ getUtilizador();
 	}
-	
-	
 
-	
-
-	
-	
-	
-	
-	
 }

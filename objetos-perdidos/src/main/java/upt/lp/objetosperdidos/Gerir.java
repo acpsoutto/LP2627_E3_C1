@@ -7,7 +7,7 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.cfg.Configuration;
-
+import org.apache.commons.validator.routines.EmailValidator;
 import org.passay.*; //password e ver uma bibliteca para o email
 
 public class Gerir {
@@ -22,7 +22,9 @@ public class Gerir {
         new CharacterRule(EnglishCharacterData.UpperCase, 1),  // pelo menos 1 maiúscula
         new CharacterRule(EnglishCharacterData.Special, 1)
         );
-	
+    
+    // Validador de emails (Apache Commons Validator): criado uma só vez.
+    private EmailValidator validadorEmail = EmailValidator.getInstance();
 
 	public void setup() {
 	    sessionFactory = new Configuration()
@@ -266,6 +268,9 @@ public class Gerir {
 		if (nome.isBlank() || email.isBlank()|| password.isBlank()) {
 			throw new Exception("Nome, email e password são obrigatorios.");	
 		}
+		if (!emailValido(email)) {
+			throw new Exception("Formato de email inválido (exemplo: nome@dominio.pt).");
+		}
         // CA03 e CA04: a password tem de ter maiúscula e carácter especial.
         // Se não tiver, mostramos uma mensagem de erro clara.
 		if (!passwordValida(password)) {
@@ -350,11 +355,24 @@ public class Gerir {
         return validador.validate(new PasswordData(password)).isValid();
     }
     
+    // ATUALIZADO (novo metodo): verifica se o email tem formato valido
+    // (ex: nome@dominio.pt) e se cabe na coluna da BD (máximo 100 caracteres).
+    public boolean emailValido(String email) {
+        return email != null
+                && email.length() <= 100
+                && validadorEmail.isValid(email);
+    }
+    
 // MATHIAS
     //Atualizar dados pessoais
     //US04
     public void atualizarDadosPessoais(long idUtilizador, String novoNome, String novoEmail, String novaPassword) {
-        if (!passwordValida(novaPassword)) {
+    	// ATUALIZADO: validaçao do formato do novo email (nao existia antes).
+    	if (!emailValido(novoEmail)) {
+             System.out.println("Erro: Formato de email inválido (exemplo: nome@dominio.pt).");
+             return;
+        }
+    	if (!passwordValida(novaPassword)) {
             System.out.println("Erro: A nova password deve conter uma maiúscula e um carácter especial.");
             return;
         }
@@ -366,28 +384,46 @@ public class Gerir {
         }
 
         Transaction transaction = null;
-        try (Session session = sessionFactory.openSession()) {
-            transaction = session.beginTransaction();
+        try (Session session = sessionFactory.openSession()) {//fecha a sessão automaticamente no fim, aconteça o que acontecer.
+            transaction = session.beginTransaction(); // abre a transacao
 
             Utilizador u = session.get(Utilizador.class, idUtilizador);
             if (u != null) {
                 u.setNome(novoNome);
                 u.setEmail(novoEmail);
                 u.setPassword(novaPassword);
+                // ATUALIZADO: o commit passou para aqui, antes da mensagem de sucesso,
+                // para só dizer "sucesso" se a gravação na BD correr bem.
+                transaction.commit(); //commit quer dizer confirmar
+                
+                // ATUALIZADO (correção do erro): atualiza também o utilizador em sessão.
+                // Antes só a BD era alterada, e o getPerfil() continuava a devolver
+                // os dados antigos (nome, email e password) até haver novo login.
+                if (sessao != null && sessao.getIdUtilizador() == idUtilizador) {
+                    sessao.setNome(novoNome);
+                    sessao.setEmail(novoEmail);
+                    sessao.setPassword(novaPassword);
+                }
                 System.out.println("Dados atualizados com sucesso!");
+                
             } else {
+                // ATUALIZADO: se o utilizador não existe, faz rollback
+                // em vez de um commit sem alterações.
+            	transaction.rollback();//rollback quer dizer anular
                 System.out.println("Utilizador não encontrado.");
             }
-
-            transaction.commit();
         } catch (Exception e) {
             if (transaction != null && transaction.isActive()) {
-                transaction.rollback();
+                transaction.rollback(); //rollback quer dizer anular
             }
-            e.printStackTrace();
-        }
+            e.printStackTrace(); }//mostra onde e porquê falhou.
     }
-    
+//printStackTrace() escreve na consola a mensagem do erro e esse caminho, por exemplo:
+
+//org.hibernate.exception.ConstraintViolationException: Duplicate entry 'ana@upt.pt'
+//at upt.lp.objetosperdidos.Gerir.atualizarDadosPessoais(Gerir.java:312)
+//at upt.lp.objetosperdidos.Teste.main(Teste.java:180)       
+     
     // US07: Registar objeto encontrado
     public void criarAnuncioEncontrado(String titulo, Categoria categoria, String descricao, String cor, String localizacao) {
         if (sessao == null) {
