@@ -36,6 +36,10 @@ public class Teste {
 			case 1:
 					System.out.print("Nome: ");
 					String nome = sc.nextLine();
+					if(nome.trim().isEmpty()){
+						System.out.println("ERRO: Campo preenchido incorretamente!");
+			        	continue;
+			        }
 
 					System.out.print("Email: ");
 					String email = sc.nextLine();
