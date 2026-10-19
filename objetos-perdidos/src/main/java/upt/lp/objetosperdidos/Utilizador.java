@@ -20,7 +20,7 @@ public class Utilizador {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "idUtilizador")
-	private long idUtilizador;
+	private int idUtilizador;
 	
 	/** Nome do utilizador. Obrigatório. */
 	@Column (nullable = false)
@@ -76,7 +76,7 @@ public class Utilizador {
 	 *
 	 * @return o id do utilizador
 	 */
-	public long getIdUtilizador() {
+	public int getIdUtilizador() {
 		return idUtilizador;
 	}
 	

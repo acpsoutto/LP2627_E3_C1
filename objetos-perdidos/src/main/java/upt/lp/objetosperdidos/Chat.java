@@ -23,7 +23,7 @@ public class Chat {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "idChat")
-	private long idChat;
+	private int idChat;
 	
 	/** Anúncio a que o chat diz respeito (coluna {@code idAnuncio}). Obrigatório. */
 	@ManyToOne
@@ -150,7 +150,7 @@ public class Chat {
 	 *
 	 * @return o id do chat
 	 */
-	public long getIdChat() {
+	public int getIdChat() {
 		return idChat;
 	}
 

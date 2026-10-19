@@ -20,7 +20,7 @@ public class Mensagem {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "idMensagem")
-	private long idMensagem;
+	private int idMensagem;
 	
 	/** Chat a que a mensagem pertence (coluna {@code idChat}). Obrigatório. */
 	@ManyToOne
@@ -67,7 +67,7 @@ public class Mensagem {
 	 *
 	 * @return o id da mensagem
 	 */
-	public long getIdMensagem() {
+	public int getIdMensagem() {
 		return idMensagem;
 	}
 	/**

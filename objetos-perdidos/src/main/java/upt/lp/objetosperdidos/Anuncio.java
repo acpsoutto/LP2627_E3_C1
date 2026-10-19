@@ -29,7 +29,7 @@ public abstract class Anuncio {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "idAnuncio")
-	private long idAnuncio;
+	private int idAnuncio;
 	
 	/** Título do anúncio. Obrigatório. */
 	@Column(nullable = false)
@@ -112,7 +112,7 @@ public abstract class Anuncio {
 	 *
 	 * @return o id do anúncio
 	 */
-	public long getIdAnuncio() {
+	public int getIdAnuncio() {
 		return idAnuncio;
 	}
 

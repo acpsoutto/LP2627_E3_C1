@@ -83,7 +83,7 @@ public class Gerir {
 		    }
 		}
 
-		public void reivindicar(long anuncioID, long utiID) {
+		public void reivindicar(int anuncioID, int utiID) {
 			Transaction transaction = null;
 			try (Session session = sessionFactory.openSession()) {
 		        transaction = session.beginTransaction();
@@ -134,7 +134,7 @@ public class Gerir {
 			    }
 		}
 		
-		public boolean verificarIdChat(long idChat, List<Chat> meusChats) {
+		public boolean verificarIdChat(int idChat, List<Chat> meusChats) {
 			for(Chat c : meusChats) {
 				if(idChat == c.getIdChat()) {
 					return true;
@@ -145,7 +145,7 @@ public class Gerir {
 		
 		// enviar nova mensagem num chat
 		
-		public void enviarMensagem(long idChat, long idEmissor, String texto) {
+		public void enviarMensagem(int idChat, int idEmissor, String texto) {
 			if (texto == null || texto.isBlank()) {
 				System.out.println("Erro: A mensagem não pode estar vazia");
 				return;
@@ -238,7 +238,7 @@ public class Gerir {
 			}
 		}
 		
-		public void mostrarMensagensChat(long idChat) {
+		public void mostrarMensagensChat(int idChat) {
 			try (Session session = sessionFactory.openSession()){
 				Chat c = session.get(Chat.class, idChat);
 				if (c==null) {
@@ -368,7 +368,7 @@ public class Gerir {
 // MATHIAS
     //Atualizar dados pessoais
     //US04
-    public void atualizarDadosPessoais(long idUtilizador, String novoNome, String novoEmail, String novaPassword) {
+    public void atualizarDadosPessoais(int idUtilizador, String novoNome, String novoEmail, String novaPassword) {
     	// ATUALIZADO: validaçao do formato do novo email (nao existia antes).
     	if (!emailValido(novoEmail)) {
              System.out.println("Erro: Formato de email inválido (exemplo: nome@dominio.pt).");
@@ -491,7 +491,7 @@ public class Gerir {
         }
     }
     
-    public void eliminarAnuncio(long idAnuncio) {
+    public void eliminarAnuncio(int idAnuncio) {
 		Transaction transaction = null;
 		try (Session session = sessionFactory.openSession()) {
 			transaction = session.beginTransaction();
