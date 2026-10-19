@@ -16,7 +16,7 @@ import jakarta.persistence.*;
 public class AnuncioEncontrado extends Anuncio {
 	
 	/** Local onde o objeto foi encontrado. Obrigatório. */
-	@Column(nullable = false)
+	@Column(nullable = false, length = 100)
 	private String localizacao;
 
 	/**

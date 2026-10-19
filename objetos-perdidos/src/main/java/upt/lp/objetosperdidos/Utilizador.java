@@ -23,15 +23,15 @@ public class Utilizador {
 	private int idUtilizador;
 	
 	/** Nome do utilizador. Obrigatório. */
-	@Column (nullable = false)
+	@Column (nullable = false, length = 100)
 	private String nome;
 	
 	/** Email do utilizador. Obrigatório e único (não pode haver dois emails iguais). */
-	@Column(nullable = false, unique =true)// não pode haver dois emails iguais
+	@Column(nullable = false, unique =true, length = 100)// não pode haver dois emails iguais
 	private String email;
 
 	/** Password do utilizador. Obrigatória. */	
-	@Column(nullable = false)
+	@Column(nullable = false, length = 150)
 	private String password;
 
 	/**
@@ -39,7 +39,7 @@ public class Utilizador {
 	 * Guardado na base de dados como texto, e não como número.
 	 */
 	@Enumerated(EnumType.STRING)
-	@Column(nullable = false)
+	@Column(nullable = false, length = 10)
 	private TipoUtilizador tipo;
 	
 	/** Anúncios publicados por este utilizador. */
