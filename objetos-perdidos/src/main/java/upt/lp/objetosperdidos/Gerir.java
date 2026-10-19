@@ -10,10 +10,25 @@ import org.hibernate.cfg.Configuration;
 import org.apache.commons.validator.routines.EmailValidator;
 import org.passay.*; //password e ver uma bibliteca para o email
 
+/**
+ * Classe central da lógica da aplicação de objetos perdidos.
+ * <p>
+ * Contém as operações sobre a base de dados (através do Hibernate) e a gestão do
+ * utilizador autenticado. Agrupa:
+ * <ul>
+ *   <li>utilizadores: registo, login, perfil e atualização de dados pessoais;</li>
+ *   <li>anúncios: criação, filtragem, listagem e eliminação;</li>
+ *   <li>chats e mensagens: reivindicar um anúncio, listar chats e enviar mensagens;</li>
+ *   <li>estatísticas para o gestor.</li>
+ * </ul>
+ */
 public class Gerir {
 	
+	/** Fábrica de sessões do Hibernate, criada em {@link #setup()}. */
 	private SessionFactory sessionFactory;
+	/** Utilizador autenticado neste momento, ou {@code null} se ninguém tiver feito login. */
 	private Utilizador sessao = null;
+	/** Número de tentativas de login falhadas seguidas. */
 	private int tentativasFalhadas = 0;
 	
 	// Validador da Passay: define as regras da password.
@@ -26,25 +41,45 @@ public class Gerir {
     // Validador de emails (Apache Commons Validator): criado uma só vez.
     private EmailValidator validadorEmail = EmailValidator.getInstance();
 
+	/**
+	 * Prepara a ligação à base de dados. Deve ser chamado uma vez, no início do programa.
+	 */
 	public void setup() {
 	    sessionFactory = new Configuration()
 	            .configure("hibernate.cfg.xml")
 	            .buildSessionFactory();
 	}
 	
+	/**
+	 * Fecha a ligação à base de dados. Deve ser chamado no fim do programa.
+	 */
 	public void exit() {
 		if (sessionFactory != null) {
 			sessionFactory.close();
 		}
 	}
 	
+	/**
+	 * Termina a sessão do utilizador autenticado e limpa o contador de tentativas falhadas.
+	 */
 	public void logout() {
 		sessao = null;
 		tentativasFalhadas = 0;
 	}
 	
-	// Métodos para Filtrar, Imprimir e Reivindicar anúncios
-	
+	/**
+	 * Procura anúncios pendentes, com filtros opcionais, ordenados do mais recente
+	 * para o mais antigo.
+	 * <p>
+	 * Os filtros que forem {@code null} ou vazios são ignorados. A pesquisa por cor
+	 * e por título não distingue maiúsculas de minúsculas e aceita texto parcial.
+	 *
+	 * @param op        tipo de anúncio: 1 para perdidos, qualquer outro valor para encontrados
+	 * @param categoria categoria pretendida, ou {@code null} para todas
+	 * @param cor       texto a procurar na cor, ou {@code null}/vazio para ignorar
+	 * @param titulo    texto a procurar no título, ou {@code null}/vazio para ignorar
+	 * @return a lista de anúncios pendentes que cumprem os filtros
+	 */
 	public List<Anuncio> filtrarAnuncios(int op, Categoria categoria, String cor, String titulo) {
         String tipo;
         if (op == 1) {
@@ -74,6 +109,12 @@ public class Gerir {
         }
 	}
 
+	/**
+	 * Imprime na consola uma lista de anúncios, um por linha.
+	 * Se a lista estiver vazia, escreve "Sem resultados.".
+	 *
+	 * @param anuncios a lista de anúncios a imprimir
+	 */
 		public void imprimirAnuncios(List<Anuncio> anuncios) {
 		    if (anuncios.isEmpty()) {
 		        System.out.println("Sem resultados.");
@@ -83,6 +124,16 @@ public class Gerir {
 		    }
 		}
 
+		/**
+		 * Reivindica um anúncio: cria um chat entre o dono do anúncio e o utilizador
+		 * interessado, com uma primeira mensagem automática.
+		 * <p>
+		 * A operação é recusada (e nada é gravado) se o anúncio ou o utilizador não
+		 * existirem, se o utilizador for o dono do anúncio ou se o anúncio já estiver resolvido.
+		 *
+		 * @param anuncioID identificador do anúncio a reivindicar
+		 * @param utiID     identificador do utilizador que reivindica
+		 */
 		public void reivindicar(int anuncioID, int utiID) {
 			Transaction transaction = null;
 			try (Session session = sessionFactory.openSession()) {
@@ -134,6 +185,14 @@ public class Gerir {
 			    }
 		}
 		
+		/**
+		 * Verifica se um identificador de chat existe numa lista de chats.
+		 * Serve para garantir que o utilizador só abre chats que lhe pertencem.
+		 *
+		 * @param idChat   identificador do chat a procurar
+		 * @param meusChats lista de chats do utilizador
+		 * @return {@code true} se o chat estiver na lista, {@code false} caso contrário
+		 */
 		public boolean verificarIdChat(int idChat, List<Chat> meusChats) {
 			for(Chat c : meusChats) {
 				if(idChat == c.getIdChat()) {
@@ -143,8 +202,17 @@ public class Gerir {
 			return false;
 		}
 		
-		// enviar nova mensagem num chat
-		
+		/**
+		 * Envia uma nova mensagem num chat.
+		 * <p>
+		 * A mensagem é recusada se estiver vazia, se o chat ou o emissor não existirem
+		 * ou se o emissor não fizer parte do chat. Se o dono do anúncio escrever
+		 * "Este anuncio ficou resolvido", o anúncio fica resolvido
+		 *
+		 * @param idChat    identificador do chat
+		 * @param idEmissor identificador do utilizador que envia a mensagem
+		 * @param texto     texto da mensagem
+		 */
 		public void enviarMensagem(int idChat, int idEmissor, String texto) {
 			if (texto == null || texto.isBlank()) {
 				System.out.println("Erro: A mensagem não pode estar vazia");
@@ -189,6 +257,13 @@ public class Gerir {
 			}
 		}
 		
+		/**
+		 * Lista os chats em que um utilizador participa, como dono do anúncio
+		 * ou como interessado.
+		 *
+		 * @param u o utilizador
+		 * @return a lista de chats do utilizador (vazia se não tiver nenhum)
+		 */
 		public List<Chat> listarChats(Utilizador u) {
 			List<Chat> meusChats = new ArrayList<>();
 
@@ -211,6 +286,12 @@ public class Gerir {
 			return meusChats;
 		}
 		
+		/**
+		 * Lista os anúncios publicados por um utilizador (em qualquer estado).
+		 *
+		 * @param u o utilizador
+		 * @return a lista de anúncios do utilizador (vazia se não tiver nenhum)
+		 */
 		public List<Anuncio> listarAnuncios(Utilizador u) {
             List<Anuncio> meusAnuncios = new ArrayList<>();
 
@@ -229,6 +310,12 @@ public class Gerir {
             return meusAnuncios;
         }
 		
+		/**
+		 * Imprime na consola uma lista de chats, um por linha.
+		 * Se a lista estiver vazia, escreve "Sem chats.".
+		 *
+		 * @param listaChats a lista de chats a imprimir
+		 */
 		public void imprimirChats(List<Chat> listaChats) {
 			if (listaChats.isEmpty()) {
 				System.out.println("Sem chats.");
@@ -238,6 +325,12 @@ public class Gerir {
 			}
 		}
 		
+		/**
+		 * Mostra na consola todas as mensagens de um chat, com o título do anúncio no topo.
+		 * Se o chat não existir, escreve "Chat não encontrado.".
+		 *
+		 * @param idChat identificador do chat
+		 */
 		public void mostrarMensagensChat(int idChat) {
 			try (Session session = sessionFactory.openSession()){
 				Chat c = session.get(Chat.class, idChat);
@@ -253,17 +346,17 @@ public class Gerir {
 			}
 		}
 		
-		
-	
-//ANA - UTILIZADOR----------------------------
-
-//Esta classe contém a lógica das minhas User Stories:
-//US1 - registar conta
-//US2 - autenticar (login)
-//US3 - ver os dados do perfil
-	
-	//US1: registrar uma nova conta
-	//-----------------------------------------------------
+	/**
+	 * Regista uma nova conta de utilizador do tipo {@link TipoUtilizador#NORMAL}.
+	 * <p>
+	 * Valida, por esta ordem: campos obrigatórios, formato do email, regras da
+	 * password e se o email já está registado.
+	 *
+	 * @param nome     nome do utilizador
+	 * @param email    email do utilizador (formato válido e ainda não registado)
+	 * @param password password (pelo menos uma maiúscula e um carácter especial)
+	 * @throws Exception se alguma validação falhar ou se a gravação na base de dados falhar
+	 */
 	public void registrar (String nome, String email, String password)throws Exception{
 	    // CA01: nome, email e password são obrigatórios.
         // isBlank() devolve true se o texto estiver vazio ou só com espaços.
@@ -295,48 +388,55 @@ public class Gerir {
 		}
 	}
 	
-	// US2: AUTENTICAR (LOGIN)
-	//------------------------------------------
+	/**
+	 * Autentica um utilizador com email e password e guarda-o como utilizador em sessão.
+	 * <p>
+	 * Se o email não existir ou a password estiver errada, a mensagem é sempre
+	 * "Credenciais inválidas". À terceira tentativa falhada seguida, o contador volta
+	 * a zero e é lançada uma exceção a indicar o regresso ao login.
+	 *
+	 * @param email    email do utilizador
+	 * @param password password do utilizador
+	 * @return o utilizador autenticado (o chamador pode verificar o tipo com {@link Utilizador#getTipo()})
+	 * @throws Exception se as credenciais forem inválidas
+	 */
 	public Utilizador autenticar (String email, String password)throws Exception{
-		// Procura o utilizador pelo email (null se não existir).
 		Utilizador u;
 		try(Session session = sessionFactory.openSession()){
 			u=procurarPorEmail(email);
 		}
 		
-		// CA03: se o email não existe OU a password está errada,
-        // a mensagem é sempre "Credenciais inválidas".
-        // O "!" significa "não": !igual = diferente.
 		if (u== null|| !u.getPassword().equals(password)) {
 			tentativasFalhadas++;
-			// CA02: à terceira vez, o utilizador volta ao ecrã de login.
 			if (tentativasFalhadas == 3) {
 				tentativasFalhadas =0;
 				throw new Exception ("Três tentativas falhadas. A regressar ao login.");
 			}
 			throw new Exception("Credencias inválidas.");
 		}
-		// Se chegou aqui, o login está certo.
-        tentativasFalhadas = 0;   // limpa o contador de erros
-        sessao = u;               // guarda quem está autenticado
-
-        // CA04: quem chamou este método verifica o tipo.
-        // Exemplo: if (u.getTipo() == TipoU.Gestor) { abrir menu de gestor }
+        tentativasFalhadas = 0;  
+        sessao = u;               
         return u;
 	}
-	//US3:
-	//------------------------------------------
-	//Devolve o utilizador 
+	
+	/**
+	 * Devolve o utilizador autenticado (o perfil).
+	 *
+	 * @return o utilizador em sessão, ou {@code null} se ninguém tiver feito login
+	 */ 
 	public Utilizador getPerfil() {
 		return sessao;
 	}
-	//METODO AUXILIARES (so usados dentro desta classe, por isso 'private')
 	
-	//Pecorrer a lista e devolve o utilizador com este email
-	//se nao encontrar nenhum, devolva null
+//METODO AUXILIARES (so usados dentro desta classe, por isso 'private')
 	
+	/**
+	 * Procura na base de dados o utilizador com um determinado email.
+	 *
+	 * @param email o email a procurar
+	 * @return o utilizador encontrado, ou {@code null} se não existir
+	 */
 	public Utilizador procurarPorEmail(String email) {
-		//Procurar mediante a BD
 		try (Session session = sessionFactory.openSession()) {
             List<Utilizador> lista = session
                     .createQuery("from Utilizador u where u.email = :email", Utilizador.class)
@@ -350,24 +450,44 @@ public class Gerir {
         }
 	}
 
-    // Pede à Passay para verificar a password.
-    // new PasswordData(password) embrulha o texto no formato que a Passay precisa.
-    // validate(...) aplica as regras; isValid() devolve true se cumpriu todas.
+    /**
+     * Verifica se uma password cumpre as regras: pelo menos uma maiúscula e
+     * pelo menos um carácter especial.
+     *
+     * @param password a password a verificar
+     * @return true se a password for válida, false caso contrário
+     */
     public boolean passwordValida(String password) {
         return validador.validate(new PasswordData(password)).isValid();
     }
     
-    // ATUALIZADO (novo metodo): verifica se o email tem formato valido
-    // (ex: nome@dominio.pt) e se cabe na coluna da BD (máximo 100 caracteres).
+    /**
+     * Verifica se um email tem formato válido (por exemplo, {@code nome@dominio.pt})
+     * e se cabe na coluna da base de dados (máximo de 100 caracteres).
+     *
+     * @param email o email a verificar
+     * @return {@code true} se o email for válido, {@code false} caso contrário
+     *         (incluindo quando é {@code null})
+     */
     public boolean emailValido(String email) {
         return email != null
                 && email.length() <= 100
                 && validadorEmail.isValid(email);
     }
     
-// MATHIAS
-    //Atualizar dados pessoais
-    //US04
+    /**
+     * Atualiza o nome, o email e a password de um utilizador.
+     * <p>
+     * A atualização é recusada (e nada é gravado) se o email tiver formato inválido,
+     * se a password não cumprir as regras ou se o email já pertencer a outro utilizador.
+     * Se o utilizador atualizado for o que está em sessão, os dados da sessão também
+     * são atualizados, para o perfil mostrar logo os valores novos.
+     *
+     * @param idUtilizador identificador do utilizador a atualizar
+     * @param novoNome     novo nome
+     * @param novoEmail    novo email (formato válido e não usado por outro utilizador)
+     * @param novaPassword nova password (pelo menos uma maiúscula e um carácter especial)
+     */
     public void atualizarDadosPessoais(int idUtilizador, String novoNome, String novoEmail, String novaPassword) {
     	// ATUALIZADO: validaçao do formato do novo email (nao existia antes).
     	if (!emailValido(novoEmail)) {
@@ -386,21 +506,16 @@ public class Gerir {
         }
 
         Transaction transaction = null;
-        try (Session session = sessionFactory.openSession()) {//fecha a sessão automaticamente no fim, aconteça o que acontecer.
-            transaction = session.beginTransaction(); // abre a transacao
-
+        try (Session session = sessionFactory.openSession()) {
+        	transaction = session.beginTransaction();
             Utilizador u = session.get(Utilizador.class, idUtilizador);
             if (u != null) {
                 u.setNome(novoNome);
                 u.setEmail(novoEmail);
                 u.setPassword(novaPassword);
-                // ATUALIZADO: o commit passou para aqui, antes da mensagem de sucesso,
-                // para só dizer "sucesso" se a gravação na BD correr bem.
-                transaction.commit(); //commit quer dizer confirmar
+
+                transaction.commit(); 
                 
-                // ATUALIZADO (correção do erro): atualiza também o utilizador em sessão.
-                // Antes só a BD era alterada, e o getPerfil() continuava a devolver
-                // os dados antigos (nome, email e password) até haver novo login.
                 if (sessao != null && sessao.getIdUtilizador() == idUtilizador) {
                     sessao.setNome(novoNome);
                     sessao.setEmail(novoEmail);
@@ -409,16 +524,14 @@ public class Gerir {
                 System.out.println("Dados atualizados com sucesso!");
                 
             } else {
-                // ATUALIZADO: se o utilizador não existe, faz rollback
-                // em vez de um commit sem alterações.
-            	transaction.rollback();//rollback quer dizer anular
+            	transaction.rollback();
                 System.out.println("Utilizador não encontrado.");
             }
         } catch (Exception e) {
             if (transaction != null && transaction.isActive()) {
-                transaction.rollback(); //rollback quer dizer anular
+                transaction.rollback(); 
             }
-            e.printStackTrace(); }//mostra onde e porquê falhou.
+            e.printStackTrace(); }
     }
 //printStackTrace() escreve na consola a mensagem do erro e esse caminho, por exemplo:
 
@@ -426,7 +539,18 @@ public class Gerir {
 //at upt.lp.objetosperdidos.Gerir.atualizarDadosPessoais(Gerir.java:312)
 //at upt.lp.objetosperdidos.Teste.main(Teste.java:180)       
      
-    // US07: Registar objeto encontrado
+    /**
+     * Cria um anúncio de objeto encontrado, publicado pelo utilizador em sessão.
+     * <p>
+     * É recusado se ninguém tiver feito login ou se o título ou a localização
+     * estiverem vazios.
+     *
+     * @param titulo      título do anúncio (obrigatório)
+     * @param categoria   categoria do objeto
+     * @param descricao   descrição do objeto
+     * @param cor         cor do objeto
+     * @param localizacao local onde o objeto foi encontrado (obrigatório)
+     */
     public void criarAnuncioEncontrado(String titulo, Categoria categoria, String descricao, String cor, String localizacao) {
         if (sessao == null) {
             System.out.println("Erro: Deve efetuar login para criar um anúncio.");
@@ -458,7 +582,18 @@ public class Gerir {
         }
     }
     
-    // US08: Criar anúncio de objeto perdido
+    /**
+     * Cria um anúncio de objeto perdido, publicado pelo utilizador em sessão.
+     * <p>
+     * É recusado se ninguém tiver feito login ou se o título ou a descrição
+     * estiverem vazios.
+     *
+     * @param titulo    título do anúncio (obrigatório)
+     * @param categoria categoria do objeto
+     * @param descricao descrição do objeto (obrigatória)
+     * @param cor       cor do objeto
+     * @param dataPerda data em que o objeto foi perdido
+     */
     public void criarAnuncioPerdido(String titulo, Categoria categoria, String descricao, String cor, LocalDate dataPerda) {
         if (sessao == null) {
             System.out.println("Erro: Deve efetuar login para criar um anúncio.");
@@ -491,6 +626,12 @@ public class Gerir {
         }
     }
     
+    /**
+     * Elimina um anúncio da base de dados, juntamente com os chats e mensagens associados.
+     * Se o anúncio não existir, escreve "Anúncio não encontrado.".
+     *
+     * @param idAnuncio identificador do anúncio a eliminar
+     */
     public void eliminarAnuncio(int idAnuncio) {
 		Transaction transaction = null;
 		try (Session session = sessionFactory.openSession()) {
@@ -511,7 +652,14 @@ public class Gerir {
 		}
 	}
     
-    //US10
+    /**
+     * Mostra na consola as estatísticas dos anúncios publicados num intervalo de datas
+     * (inclusive): número de objetos perdidos, de objetos encontrados e de anúncios
+     * resolvidos.
+     *
+     * @param inicio primeira data do intervalo
+     * @param fim    última data do intervalo
+     */
     public void mostrarEstatisticas(LocalDate inicio, LocalDate fim) {
         try (Session session = sessionFactory.openSession()) {
             List<Anuncio> lista = session
