@@ -43,14 +43,65 @@ Este repositório corresponde à **Componente 1**. O objetivo é desenvolver uma
 ### Principais dependências (`pom.xml`)
 - **Hibernate ORM** (`hibernate-core`, versão 6.6.45.Final) — mapeamento objeto-relacional (ORM)
 - **MySQL Connector/J** (`mysql-connector-j`, versão 9.7.0) — driver JDBC para ligação ao MySQL
+- **Jakarta Persistence API** (`jakarta.persistence-api`, versão 3.1.0) — anotações JPA das entidades
+- **Passay** (`passay`, versão 1.6.6) — validação das regras da password
+- **Apache Commons Validator** (`commons-validator`, versão 1.9.0) — validação do formato do email
   
 ### Ferramentas
 - **Eclipse IDE** — ambiente de desenvolvimento
 - **Git / GitHub** — controlo de versões e colaboração
 - **MS Planner** — gestão do projeto (Product Backlog e Do, Doing, Done)
 - **MySQL Workbench** — inspeção do esquema, tabelas e registos
-
+  
   ---
+
+## Pré-requisitos
+ 
+- Java 21 (JDK)
+- Maven 3.9.x (ou Eclipse com Maven integrado)
+- MySQL 8.0 ou superior
+- Git
+
+---
+
+## Configuração da base de dados
+ 
+1. Criar a base de dados no MySQL:
+```sql
+   CREATE DATABASE objetos_perdidos;
+```
+ 
+   O nome `objetos_perdidos` é só um exemplo. Pode usar outro, desde que seja o mesmo no passo 3.
+ 
+2. Copiar o ficheiro `hibernate.cfg.xml.example` para `hibernate.cfg.xml` (em `src/main/resources`).
+3. Editar o ficheiro e definir o URL e a palavra-passe:
+```xml
+   <property name="hibernate.connection.url">jdbc:mysql://localhost:3306/objetos_perdidos</property>
+   <property name="hibernate.connection.username">root</property>
+   <property name="hibernate.connection.password">A-TUA-PALAVRA-PASSE</property>
+        
+```
+ 
+> [!WARNING]
+> O ficheiro com as credenciais reais está no `.gitignore` e não deve ser enviado para o repositório.
+ 
+### Criar um utilizador gestor
+ 
+O registo pela aplicação cria sempre utilizadores do tipo `NORMAL`. Para criar um gestor, registar primeiro uma conta normal pela aplicação e depois alterar o tipo na base de dados:
+ 
+```sql
+UPDATE utilizador SET tipo = 'GESTOR' WHERE email = 'gestor@exemplo.pt';
+```
+ 
+## Como compilar e executar
+ 
+### Pelo Eclipse
+ 
+1. File → Import → Maven → Existing Maven Projects e selecionar a pasta do projeto.
+2. Aguardar que o Maven descarregue as dependências.
+3. Executar a classe `upt.lp.objetosperdidos.Teste` com Run As → Java Application.
+
+---
 
 ## Modelo de domínio
 
@@ -89,16 +140,18 @@ Product Backlog no MS Planner: [<link do Planner>](https://planner.cloud.microso
 | ID | User story | Estado | Atribuído a:
 |---|---|---|---|
 | US01 | Como potencial utilizador, eu quero registar uma nova conta de utilizador para ter acesso às funcionalidades do sistema. | Implementada | Ana Souto
-| US02 | US02 - •	Como utilizador, quero autenticar-me para conseguir aceder ao sistema. | Implementada | Ana Souto
-| US03 | US03 - Como utilizador, eu quero visualizar os meus dados pessoais para consultar as minhas informações de perfil. | Implementada | Ana Souto
-| US04 | US04 -Como utilizador, eu quero atualizar os meus dados pessoais para manter a minha informação atualizada.| Implementada | Mathias Pando
-| US05 | US05 - Como utilizador, eu quero visualizar artigos para encontrar os meus pertences. | Implementada | Antônio Santos
-| US06 | US06 - Como utilizador, eu quero visualizar os pedidos para devolver os pertences. | Implementada | Antônio Santos
-| US07 | US07 - •	Como utilizador, eu quero registar um objeto encontrado para que o dono o possa reivindicar. | Implementada | Guilherme Silvia
-| US08 | US08 - •	Como utilizador, eu quero criar um pedido de objeto perdido para tentar encontrar o meu pertence. | Implementada | Guilherme Silva
-| US09 | US09  - Como utilizador, eu quero filtrar a lista de artigos para refinar os meus resultados de pesquisa. | Implementada | Antônio Santos
-| US10 | US10 - Como gestor, eu quero visualizar indicadores estatísticos para analisar o fluxo de objetos na plataforma. | Implementada | Mathias Pando
-| US11 | US11 - Como utilizador, eu quero submeter um pedido de reivindicação num objeto encontrado para sinalizar que esse bem me pertence. | Implementada | João Pinto
+| US02 | Como utilizador, quero autenticar-me para conseguir aceder ao sistema. | Implementada | Ana Souto
+| US03 | Como utilizador, eu quero visualizar os meus dados pessoais para consultar as minhas informações de perfil. | Implementada | Ana Souto
+| US04 | Como utilizador, eu quero atualizar os meus dados pessoais para manter a minha informação atualizada.| Implementada | Mathias Pando
+| US05 | Como utilizador, eu quero visualizar anúncios para encontrar os meus pertences. | Implementada | Antônio Santos
+| US06 | Como utilizador, eu quero visualizar os pedidos para devolver os pertences. | Implementada | Antônio Santos
+| US07 | Como utilizador, eu quero registar um objeto encontrado para que o dono o possa reivindicar. | Implementada | Guilherme Silvia
+| US08 | Como utilizador, eu quero criar um pedido de objeto perdido para tentar encontrar o meu pertence. | Implementada | Guilherme Silva
+| US09 | Como utilizador, eu quero filtrar a lista de artigos para refinar os meus resultados de pesquisa. | Implementada | Antônio Santos
+| US10 | Como utilizador, eu quero submeter um pedido de reivindicação num anúncio para sinalizar que esse bem me pertence. | Implementada | João Pinto
+| US11 | Como utilizador, eu quero visualizar os meus chats para trocar mensagens acerca de anúncios. | Implementada | João Pinto
+| US12 | Como utilizador, eu quero eliminar um anúncio para  remover anúncios que já não são necessários. | Implementada | Guilherme Silva
+| US13 | Como gestor, eu quero visualizar indicadores estatísticos para analisar o fluxo de objetos na plataforma. | Implementada | Mathias Pando
 
 OBS.: João Pinto e Antônio Santos ficaram responsáveis pelas classes teste e gerir.
 
@@ -121,6 +174,8 @@ objetos-perdidos/
 │   ├── TipoUtilizador.java
 │   └── Utilizador.java
 ├── src/main/resources/
+│   ├── hibernate.cfg.example.xml
+│   └── hibernate.cfg.xml
 ├── pom.xml
 └── README.md
 ```
