@@ -160,7 +160,7 @@ public class Teste {
 							System.out.println("Qual anuncio quer reivindicar:");
 							int Rid = sc.nextInt();
 							sc.nextLine();
-							gr.reivindicar(Rid, gr.getPerfil().getIdUtilizador());
+							gr.reivindicar(Rid, gr.getPerfil().getIdUtilizador(), op);
 						}
 						if(opt == 2){
 							Categoria categoriaFiltro = null;
@@ -214,9 +214,10 @@ public class Teste {
 					    System.out.println("Cor: ");
 					    String cor = sc.nextLine();
 					    
+					    int tipoAnuncioTemp;
 					    int opcao = -1;
 					    while(opcao > 1 || opcao < 0) {
-					    	int tipoAnuncioTemp;
+					    	
 					    	if(tipoAnuncio == 1) {
 					    		tipoAnuncioTemp = 2;
 					    	}else {
@@ -235,13 +236,18 @@ public class Teste {
 								sc.nextLine();
 					    	}
 					    }
-					    
+					    if(tipoAnuncio==1) {
+					    	tipoAnuncioTemp = 2;
+					    }
+					    else {
+					    	tipoAnuncioTemp = 1;
+					    }
 					    switch (opcao) {
 					    case 1:
 					    	System.out.println("Qual anuncio quer reivindicar:");
 							int Rid = sc.nextInt();
 							sc.nextLine();
-							gr.reivindicar(Rid, gr.getPerfil().getIdUtilizador());
+							gr.reivindicar(Rid, gr.getPerfil().getIdUtilizador(), tipoAnuncioTemp);
 					    break;
 					    
 					    case 0:
