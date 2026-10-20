@@ -332,7 +332,7 @@ public class Teste {
 	                        System.out.print("Id do anúncio a eliminar: ");
 	                        int idEliminar = sc.nextInt();
 	                        sc.nextLine();
-	                        gr.eliminarAnuncio(idEliminar);
+	                        gr.eliminarAnuncio(idEliminar,gr.getPerfil().getIdUtilizador());
 	                    }
 						break;
 						

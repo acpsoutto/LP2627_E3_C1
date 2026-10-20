@@ -631,22 +631,19 @@ public class Gerir {
         }
     }
     
-    /**
-     * Elimina um anúncio da base de dados, juntamente com os chats e mensagens associados.
-     * Se o anúncio não existir, escreve "Anúncio não encontrado.".
-     *
-     * @param idAnuncio identificador do anúncio a eliminar
-     */
-    public void eliminarAnuncio(int idAnuncio) {
+    public void eliminarAnuncio(int idAnuncio,int idutilizador) {
 		Transaction transaction = null;
 		try (Session session = sessionFactory.openSession()) {
 			transaction = session.beginTransaction();
 			Anuncio anuncio = session.get(Anuncio.class, idAnuncio);
-			if (anuncio != null) {
+			
+			if(anuncio == null || anuncio.getUtilizador().getIdUtilizador() != idutilizador) {
+				System.out.println("ID de anuncio invalido!");
+				return;
+			}
+			else{
 				session.remove(anuncio);
 				System.out.println("Anúncio #" + idAnuncio + " eliminado com sucesso.");
-			} else {
-				System.out.println("Anúncio não encontrado.");
 			}
 			transaction.commit();
 		} catch (Exception e) {
