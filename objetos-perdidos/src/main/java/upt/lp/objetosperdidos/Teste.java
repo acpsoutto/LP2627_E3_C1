@@ -4,17 +4,49 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Scanner;
 
+/**
+ * Classe principal da aplicação de objetos perdidos: contém o {@code main} e os
+ * menus de consola.
+ * <p>
+ * O programa começa num menu de login, onde o utilizador se regista ou se autentica.
+ * Depois do login, o menu depende do tipo de utilizador:
+ * <ul>
+ *   <li>{@link TipoUtilizador#NORMAL}: pesquisa, criação e eliminação de anúncios,
+ *       reivindicação de objetos, chats e dados pessoais;</li>
+ *   <li>{@link TipoUtilizador#GESTOR}: consulta de estatísticas.</li>
+ * </ul>
+ * Toda a lógica e o acesso à base de dados estão na classe {@link Gerir}. Esta classe
+ * só lê as opções do utilizador e chama os métodos de {@link Gerir}.
+ */
 public class Teste {
 
+	/**
+	 * Ponto de entrada do programa.
+	 * <p>
+	 * Fluxo geral:
+	 * <ol>
+	 *   <li>prepara a ligação à base de dados com {@link Gerir#setup()};</li>
+	 *   <li>mostra o menu de login (novo utilizador, utilizador existente ou fechar);</li>
+	 *   <li>no registo, pede nome, email (repete o pedido enquanto o formato for inválido)
+	 *       e password (repete o pedido enquanto não cumprir as regras);</li>
+	 *   <li>no login, permite até 3 tentativas e depois volta ao menu de login;</li>
+	 *   <li>depois de autenticado, mostra o menu de utilizador ou o menu de gestor,
+	 *       consoante o tipo, até o utilizador fazer logout;</li>
+	 *   <li>ao fechar o programa, termina a ligação com {@link Gerir#exit()}.</li>
+	 * </ol>
+	 * Ao criar um anúncio, o programa mostra primeiro os anúncios do tipo oposto que
+	 * possam corresponder, para o utilizador poder reivindicar um deles em vez de criar
+	 * um anúncio novo.
+	 *
+	 * @param args argumentos da linha de comandos (não são usados)
+	 */
 	public static void main(String[] args) {
 		Scanner sc = new Scanner(System.in);
 		Gerir gr = new Gerir();
 		gr.setup();
 		int opL= 1;
 		
-		/**
-		 * Login
-		 */
+        //login
 		while(opL != 0) {
 			System.out.println("Login:");
 			System.out.println("1- Novo utilizador.");
@@ -43,8 +75,7 @@ public class Teste {
 
 					System.out.print("Email: ");
 					String email = sc.nextLine();
-					
-			        // ATUALIZADO: pede o email outra vez enquanto o formato for inválido.
+
 			        while (!gr.emailValido(email)) {
 			            System.out.println("Erro: Formato de email inválido (exemplo: nome@dominio.pt).");
 			            System.out.print("Email: ");
@@ -92,9 +123,7 @@ public class Teste {
 			break;
 			}
 			
-			/**
-			 * Menu de utilizador
-			 */
+			 //Menu de utilizador
 			int op = 1;
 			if(gr.getPerfil().getTipo() != TipoUtilizador.GESTOR) {
 				while(op != 0) {
@@ -131,7 +160,7 @@ public class Teste {
 							System.out.println("Qual anuncio quer reivindicar:");
 							int Rid = sc.nextInt();
 							sc.nextLine();
-							gr.reivindicar(Rid, gr.getPerfil().getIdUtilizador());
+							gr.reivindicar(Rid, gr.getPerfil().getIdUtilizador(), op);
 						}
 						if(opt == 2){
 							Categoria categoriaFiltro = null;
@@ -185,9 +214,10 @@ public class Teste {
 					    System.out.println("Cor: ");
 					    String cor = sc.nextLine();
 					    
+					    int tipoAnuncioTemp;
 					    int opcao = -1;
 					    while(opcao > 1 || opcao < 0) {
-					    	int tipoAnuncioTemp;
+					    	
 					    	if(tipoAnuncio == 1) {
 					    		tipoAnuncioTemp = 2;
 					    	}else {
@@ -206,13 +236,18 @@ public class Teste {
 								sc.nextLine();
 					    	}
 					    }
-					    
+					    if(tipoAnuncio==1) {
+					    	tipoAnuncioTemp = 2;
+					    }
+					    else {
+					    	tipoAnuncioTemp = 1;
+					    }
 					    switch (opcao) {
 					    case 1:
 					    	System.out.println("Qual anuncio quer reivindicar:");
 							int Rid = sc.nextInt();
 							sc.nextLine();
-							gr.reivindicar(Rid, gr.getPerfil().getIdUtilizador());
+							gr.reivindicar(Rid, gr.getPerfil().getIdUtilizador(), tipoAnuncioTemp);
 					    break;
 					    
 					    case 0:
@@ -311,9 +346,8 @@ public class Teste {
 					}
 				}
 			}
-		        /**
-		         * Menu do gestor
-		         */
+		        
+			// Menu do gestor
 			else {
 	            while(op != 0) {
 	                System.out.println("Menu Gestor");
@@ -359,7 +393,13 @@ public class Teste {
 		System.out.println("Programa encerrado.");
 	}
 	
-	
+	/**
+	 * Converte um texto numa {@link Categoria}, sem distinguir maiúsculas de minúsculas
+	 * e ignorando espaços no início e no fim. Por exemplo, "livros" dá {@link Categoria#LIVROS}.
+	 *
+	 * @param texto o texto escrito pelo utilizador
+	 * @return a categoria correspondente, ou {@code null} se o texto não corresponder a nenhuma
+	 */
 	private static Categoria lerCategoria(String texto) {
 		for (Categoria c : Categoria.values()) {
 			if (c.name().equalsIgnoreCase(texto.trim())) {
