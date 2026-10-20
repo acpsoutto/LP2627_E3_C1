@@ -668,8 +668,9 @@ public class Gerir {
     public void mostrarEstatisticas(LocalDate inicio, LocalDate fim) {
     	// Validar se as datas são coerentes
         if (inicio.isAfter(fim)) {
-            throw new IllegalArgumentException(
+            System.out.println(
                     "A data de início não pode ser posterior à data de fim.");
+            return;
         }
     	try (Session session = sessionFactory.openSession()) {
             List<Anuncio> lista = session
