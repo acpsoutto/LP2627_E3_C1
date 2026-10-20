@@ -491,16 +491,19 @@ public class Gerir {
         }
     }
     
-    public void eliminarAnuncio(int idAnuncio) {
+    public void eliminarAnuncio(int idAnuncio,int idutilizador) {
 		Transaction transaction = null;
 		try (Session session = sessionFactory.openSession()) {
 			transaction = session.beginTransaction();
 			Anuncio anuncio = session.get(Anuncio.class, idAnuncio);
-			if (anuncio != null) {
+			
+			if(anuncio == null || anuncio.getUtilizador().getIdUtilizador() != idutilizador) {
+				System.out.println("ID de anuncio invalido!");
+				return;
+			}
+			else{
 				session.remove(anuncio);
 				System.out.println("Anúncio #" + idAnuncio + " eliminado com sucesso.");
-			} else {
-				System.out.println("Anúncio não encontrado.");
 			}
 			transaction.commit();
 		} catch (Exception e) {
