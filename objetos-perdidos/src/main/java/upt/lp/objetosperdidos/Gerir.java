@@ -666,6 +666,10 @@ public class Gerir {
      * @param fim    última data do intervalo
      */
     public void mostrarEstatisticas(LocalDate inicio, LocalDate fim) {
+    	if(inicio.isAfter(fim)) {
+    		System.out.println("A data de inicio não pode ser posterior à de fim. ");
+    		return;
+    	}
         try (Session session = sessionFactory.openSession()) {
             List<Anuncio> lista = session
                     .createQuery(
