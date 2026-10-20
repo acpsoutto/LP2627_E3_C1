@@ -134,12 +134,17 @@ public class Gerir {
 		 * @param anuncioID identificador do anúncio a reivindicar
 		 * @param utiID     identificador do utilizador que reivindica
 		 */
-		public void reivindicar(int anuncioID, int utiID) {
+		public void reivindicar(int anuncioID, int utiID, int op) {
 			Transaction transaction = null;
 			try (Session session = sessionFactory.openSession()) {
 		        transaction = session.beginTransaction();
 		        Anuncio anuncio = session.get(Anuncio.class, anuncioID);
 		        Utilizador utilizador = session.get(Utilizador.class, utiID);
+		        if ((anuncio instanceof AnuncioPerdido && op==2) ||(anuncio instanceof AnuncioEncontrado && op==1)) {
+		        	System.out.println("Anuncio não encontrado");
+		        	transaction.rollback();
+		        	return;
+		        	}
 
 		        if (anuncio == null || utilizador == null) {
 		            System.out.println("Anúncio ou utilizador não encontrado.");
