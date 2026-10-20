@@ -661,7 +661,12 @@ public class Gerir {
      * @param fim    última data do intervalo
      */
     public void mostrarEstatisticas(LocalDate inicio, LocalDate fim) {
-        try (Session session = sessionFactory.openSession()) {
+    	// Validar se as datas são coerentes
+        if (inicio.isAfter(fim)) {
+            throw new IllegalArgumentException(
+                    "A data de início não pode ser posterior à data de fim.");
+        }
+    	try (Session session = sessionFactory.openSession()) {
             List<Anuncio> lista = session
                     .createQuery(
                             "from Anuncio a " +
