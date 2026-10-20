@@ -18,6 +18,11 @@
         
         <property name="hibernate.show_sql">true</property>
         
-        
+        <mapping class="upt.lp.objetosperdidos.Utilizador"/>
+		<mapping class="upt.lp.objetosperdidos.Anuncio"/>
+		<mapping class="upt.lp.objetosperdidos.AnuncioPerdido"/>
+		<mapping class="upt.lp.objetosperdidos.AnuncioEncontrado"/>
+		<mapping class="upt.lp.objetosperdidos.Chat"/>
+		<mapping class="upt.lp.objetosperdidos.Mensagem"/>
     </session-factory>
 </hibernate-configuration>
