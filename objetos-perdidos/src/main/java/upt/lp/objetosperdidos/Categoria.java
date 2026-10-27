@@ -14,6 +14,8 @@ public enum Categoria {
 	/** Material de escrita (canetas, lápis, estojos, etc.). */
 	MATERIAL_ESCRITA,
 	/** Peças de roupa e acessórios. */
-	ROUPA
+	ROUPA,
+	/** Outras itens que não se encaixam nas outras categorias. */
+	OUTROS
 	
 }

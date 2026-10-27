@@ -1,6 +1,7 @@
 package upt.lp.objetosperdidos;
 
 import java.time.LocalDate;
+import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Scanner;
 
@@ -53,8 +54,7 @@ public class Teste {
 			System.out.println("2- Utilizador existente.");
 			System.out.println("0- Fechar programa");
 			System.out.println("Opção");
-			opL = sc.nextInt();
-			sc.nextLine();
+			opL = inserirInt(sc);
 			
 			if(opL == 0) {
 				break;
@@ -137,8 +137,7 @@ public class Teste {
 					System.out.println("0- Logout.");
 					System.out.println("Opção: ");
 						
-					op = sc.nextInt();
-					sc.nextLine();
+					op = inserirInt(sc);
 						
 					switch(op) {
 					case 1:
@@ -154,22 +153,43 @@ public class Teste {
 							System.out.println("Outra opção- Voltar");
 							System.out.println("Opção");
 							opt = sc.nextInt();
-							sc.nextLine();
 						
 						if(opt == 1) {
 							System.out.println("Qual anuncio quer reivindicar:");
-							int Rid = sc.nextInt();
-							sc.nextLine();
+							int Rid = inserirInt(sc);
 							gr.reivindicar(Rid, gr.getPerfil().getIdUtilizador(), op);
 						}
 						if(opt == 2){
 							Categoria categoriaFiltro = null;
-							System.out.println("Eletronicos, Livros, Material_Escrita, Roupa");
-							System.out.println("Categoria (Enter para não inserir):");
-	
-							String cat = sc.nextLine().trim();
-							if (!cat.isEmpty()) {
-								categoriaFiltro = lerCategoria(cat);
+							while(true) {
+								System.out.println("Categoria (Enter para não inserir):");
+								System.out.println("1-Eletronicos | 2-Livros | 3-Material Escrita | 4-Roupa | 5-Outros");
+								System.out.println("Categoria (0 para não inserir):");
+		
+								int catnum = inserirInt(sc);
+								switch(catnum) {
+								case 1:
+									categoriaFiltro = Categoria.ELETRONICOS;
+								break;
+								case 2:
+									categoriaFiltro = Categoria.LIVROS;
+								break;
+								case 3:
+									categoriaFiltro = Categoria.MATERIAL_ESCRITA;
+								break;
+								case 4:
+									categoriaFiltro = Categoria.ROUPA;
+								break;
+								case 5:
+									categoriaFiltro = Categoria.OUTROS;
+								case 0:
+									categoriaFiltro = null;
+								default:
+									System.out.println("Categoria invalida");
+								}
+								if(catnum >= 0 && catnum<=5) {
+									break;
+								}
 							}
 							
 							System.out.println("Cor (Enter para não inserir):");
@@ -193,8 +213,7 @@ public class Teste {
 					    System.out.println("1- Procura-se (Perdido).");
 					    System.out.println("2- Encontrado.");
 					    System.out.println("Opção: ");
-					    int tipoAnuncio = sc.nextInt();
-					    sc.nextLine();
+					    int tipoAnuncio = inserirInt(sc);
 					    
 					    if(tipoAnuncio<1 || tipoAnuncio >2) {
 					    	System.out.println("Erro- Tipo Invalido!");
@@ -207,9 +226,37 @@ public class Teste {
 					    System.out.println("Descrição: ");
 					    String descricao = sc.nextLine();
 	
-					    System.out.println("Categoria (Eletronicos, Livros, Material_Escrita, Roupa): ");
-					    String catStr = sc.nextLine().trim();
-					    Categoria categoria = lerCategoria(catStr);
+					    Categoria categoria = null;
+						while(true) {
+							System.out.println("Categoria (Enter para não inserir):");
+							System.out.println("1-Eletronicos | 2-Livros | 3-Material Escrita | 4-Roupa | 5-Outros");
+							System.out.println("Categoria (0 para não inserir):");
+	
+							int catnum = inserirInt(sc);
+							switch(catnum) {
+							case 1:
+								categoria = Categoria.ELETRONICOS;
+							break;
+							case 2:
+								categoria = Categoria.LIVROS;
+							break;
+							case 3:
+								categoria= Categoria.MATERIAL_ESCRITA;
+							break;
+							case 4:
+								categoria = Categoria.ROUPA;
+							break;
+							case 5:
+								categoria = Categoria.OUTROS;
+							case 0:
+								categoria = null;
+							default:
+								System.out.println("Categoria invalida");
+							}
+							if(catnum >= 0 && catnum<=5) {
+								break;
+							}
+						}
 	
 					    System.out.println("Cor: ");
 					    String cor = sc.nextLine();
@@ -232,8 +279,7 @@ public class Teste {
 								
 								System.out.println("Um destes anuncios corresponde ao que queria criar? (1-Sim / 0-Não).");
 								System.out.println("Opção: ");
-								opcao = sc.nextInt();
-								sc.nextLine();
+								opcao = inserirInt(sc);
 					    	}
 					    }
 					    if(tipoAnuncio==1) {
@@ -245,8 +291,7 @@ public class Teste {
 					    switch (opcao) {
 					    case 1:
 					    	System.out.println("Qual anuncio quer reivindicar:");
-							int Rid = sc.nextInt();
-							sc.nextLine();
+							int Rid = inserirInt(sc);
 							gr.reivindicar(Rid, gr.getPerfil().getIdUtilizador(), tipoAnuncioTemp);
 					    break;
 					    
@@ -282,8 +327,7 @@ public class Teste {
 						
 						if(!meusChats.isEmpty()) {
 							System.out.print("\n Digite o ID do CHAT para abrir (0 para voltar) : ");
-							int idChat = sc.nextInt();
-							sc.nextLine();
+							int idChat = inserirInt(sc);
 							
 							if (idChat !=0 && gr.verificarIdChat(idChat,meusChats) ) {
 
@@ -309,8 +353,7 @@ public class Teste {
 						System.out.println("Email: " + u.getEmail());
 	
 						System.out.print("\nDeseja atualizar os seus dados? (1- Sim / 0- Não): ");
-						int atualizar = sc.nextInt();
-						sc.nextLine();
+						int atualizar = inserirInt(sc);
 	
 						if (atualizar == 1) {
 							System.out.print("Novo Nome: ");
@@ -330,8 +373,7 @@ public class Teste {
 	                    gr.imprimirAnuncios(meusAnuncios);
 	                    if(!meusAnuncios.isEmpty()) {
 	                        System.out.print("Id do anúncio a eliminar: ");
-	                        int idEliminar = sc.nextInt();
-	                        sc.nextLine();
+	                        int idEliminar = inserirInt(sc);
 	                        gr.eliminarAnuncio(idEliminar,gr.getPerfil().getIdUtilizador());
 	                    }
 						break;
@@ -354,8 +396,7 @@ public class Teste {
 	                System.out.println("1- Visualizar estatísticas.");
 	                System.out.println("0- Logout");
 	                System.out.println("Opção: ");
-	                op = sc.nextInt();
-	                sc.nextLine();
+	                op = inserirInt(sc);
 	                switch (op) {
 	                    case 1:
 	                        System.out.print("Data de início (AAAA-MM-DD) ou Enter para últimos 30 dias: ");
@@ -393,19 +434,17 @@ public class Teste {
 		System.out.println("Programa encerrado.");
 	}
 	
-	/**
-	 * Converte um texto numa {@link Categoria}, sem distinguir maiúsculas de minúsculas
-	 * e ignorando espaços no início e no fim. Por exemplo, "livros" dá {@link Categoria#LIVROS}.
-	 *
-	 * @param texto o texto escrito pelo utilizador
-	 * @return a categoria correspondente, ou {@code null} se o texto não corresponder a nenhuma
-	 */
-	private static Categoria lerCategoria(String texto) {
-		for (Categoria c : Categoria.values()) {
-			if (c.name().equalsIgnoreCase(texto.trim())) {
-				return c;
+	public static int inserirInt(Scanner sc) {
+		while(true) {
+			try {
+				int a=sc.nextInt();
+				sc.nextLine();
+				return a;
+			}catch(InputMismatchException e) {
+				System.out.println("So e valido numeros inteiros, insira de novo:\n");
+				sc.nextLine();
+				continue;
 			}
 		}
-		return null;
 	}
 }
