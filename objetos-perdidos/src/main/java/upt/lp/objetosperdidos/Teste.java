@@ -332,12 +332,24 @@ public class Teste {
 							if (idChat !=0 && gr.verificarIdChat(idChat,meusChats) ) {
 
 								gr.mostrarMensagensChat(idChat);
-								System.out.println("(Nota: Se for o dono do anúncio, escreva 'Este anuncio ficou resolvido' para fechar o anúncio)");
-								System.out.print("Escreva a sua mensagem (Enter para cancelar): ");
-								String msg = sc.nextLine();
-								if (!msg.isBlank()) {
-									gr.enviarMensagem(idChat, gr.getPerfil().getIdUtilizador(), msg);
-							}
+								
+								System.out.println("1 - Enviar mensagem.");
+								System.out.println("2 - Denunciar utilizador neste chat.");
+								System.out.println("0 - Voltar.");
+								System.out.println("Opção: ");
+								int opChat = inserirInt(sc);
+								
+								if(opChat == 1) {	
+									System.out.println("(Nota: Se for o dono do anúncio, escreva 'Este anuncio ficou resolvido' para fechar o anúncio)");
+									System.out.print("Escreva a sua mensagem (Enter para cancelar): ");
+									String msg = sc.nextLine();
+									if (!msg.isBlank()) {
+										gr.enviarMensagem(idChat, gr.getPerfil().getIdUtilizador(), msg);
+									}
+								}else if(opChat == 2){
+									gr.denunciarUtilizador(idChat, gr.getPerfil().getIdUtilizador());
+								}
+								
 						}
 							else {
 								System.out.println("Chat Invalido!");
