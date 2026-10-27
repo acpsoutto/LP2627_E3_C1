@@ -396,6 +396,7 @@ public class Teste {
 	            while(op != 0) {
 	                System.out.println("Menu Gestor");
 	                System.out.println("1- Visualizar estatísticas.");
+	                System.out.println("2 - Visualizar chats denunciados");
 	                System.out.println("0- Logout");
 	                System.out.println("Opção: ");
 	                op = inserirInt(sc);
@@ -416,6 +417,21 @@ public class Teste {
 
 	                        gr.mostrarEstatisticas(inicio, fim);
 	                    break;
+	                    
+	                    case 2:
+	                    	List<Chat> chatsDenunciados = gr.listarChatsDenunciadosParaGestor();
+	                    	gr.imprimirChats(chatsDenunciados);
+	                    	
+	                    	if(!chatsDenunciados.isEmpty()) {
+	                    		System.out.println("Digite o ID do chat que deseja inspecionar (0 para voltar).");
+	                    		int idChatGestor = inserirInt(sc);
+	                    		
+	                    		if(idChatGestor != 0) {
+	                    			gr.mostrarMensagensChat(idChatGestor);
+	                    		}
+	                    	}
+	                    break;	
+	                    	
 	                    case 0:
 	                        gr.logout();
 	                        System.out.println("A fechar");

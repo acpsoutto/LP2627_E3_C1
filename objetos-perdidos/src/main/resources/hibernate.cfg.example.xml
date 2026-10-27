@@ -24,5 +24,6 @@
 		<mapping class="upt.lp.objetosperdidos.AnuncioEncontrado"/>
 		<mapping class="upt.lp.objetosperdidos.Chat"/>
 		<mapping class="upt.lp.objetosperdidos.Mensagem"/>
+		<mapping class="upt.lp.objetosperdidos.Denuncia"/>
     </session-factory>
 </hibernate-configuration>

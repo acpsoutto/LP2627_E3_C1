@@ -351,6 +351,15 @@ public class Gerir {
 			}
 		}
 		
+		public List<Chat> listarChatsDenunciadosParaGestor(){
+			try(Session session = sessionFactory.openSession()){
+				String hql = "select distinct d.chat from Denuncia d " +
+	                         "where d.denunciado.idUtilizador in " +
+	                         "(select d2.denunciado.idUtilizador from Denuncia d2 group by d2.denunciado.idUtilizador having count(d2) >= 10)";
+				return session.createQuery(hql, Chat.class).getResultList();
+			}
+		}
+		
 	/**
 	 * Regista uma nova conta de utilizador do tipo {@link TipoUtilizador#NORMAL}.
 	 * <p>
