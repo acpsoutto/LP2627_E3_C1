@@ -313,6 +313,8 @@ public class Teste {
 						sc.nextLine();
 	
 						if (atualizar == 1) {
+							System.out.println("Nos campos que não pretender alterar, prima ENTER para avançar.");
+							System.out.println("---------------------------------------------------------------");
 							System.out.print("Novo Nome: ");
 							String novoNome = sc.nextLine();
 							System.out.print("Novo Email: ");
