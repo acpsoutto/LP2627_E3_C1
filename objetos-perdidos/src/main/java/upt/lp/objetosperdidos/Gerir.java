@@ -494,19 +494,28 @@ public class Gerir {
      * @param novaPassword nova password (pelo menos uma maiúscula e um carácter especial)
      */
     public void atualizarDadosPessoais(int idUtilizador, String novoNome, String novoEmail, String novaPassword) {
-    	// ATUALIZADO: validaçao do formato do novo email (nao existia antes).
-    	if (!emailValido(novoEmail)) {
-             System.out.println("Erro: Formato de email inválido (exemplo: nome@dominio.pt).");
-             return;
-        }
-    	if (!passwordValida(novaPassword)) {
+    	
+    	boolean atualizarNome= !novoNome.trim().isEmpty();
+    	boolean atualizarEmail= !novoEmail.trim().isEmpty();
+    	boolean atualizarPassw= !novaPassword.trim().isEmpty();
+    	
+    	
+    	//Validar Email so se foi preenchido
+	    if(atualizarEmail) {
+	    	// ATUALIZADO: validaçao do formato do novo email (nao existia antes).
+    		if (!emailValido(novoEmail)) {
+	             System.out.println("Erro: Formato de email inválido (exemplo: nome@dominio.pt).");
+	             return;
+	        }
+    		Utilizador existente = procurarPorEmail(novoEmail);
+            if (existente != null && existente.getIdUtilizador() != idUtilizador) {
+                System.out.println("Erro: O novo email já existe no sistema.");
+                return;
+            }
+	    	
+	    }
+	    if (atualizarPassw && !passwordValida(novaPassword)) {
             System.out.println("Erro: A nova password deve conter uma maiúscula e um carácter especial.");
-            return;
-        }
-
-        Utilizador existente = procurarPorEmail(novoEmail);
-        if (existente != null && existente.getIdUtilizador() != idUtilizador) {
-            System.out.println("Erro: O novo email já existe no sistema.");
             return;
         }
 
@@ -515,16 +524,17 @@ public class Gerir {
         	transaction = session.beginTransaction();
             Utilizador u = session.get(Utilizador.class, idUtilizador);
             if (u != null) {
-                u.setNome(novoNome);
-                u.setEmail(novoEmail);
-                u.setPassword(novaPassword);
+            	//Atualizar apenas os campos novos
+                if (atualizarNome) u.setNome(novoNome);
+                if (atualizarEmail)u.setEmail(novoEmail);
+                if (atualizarPassw) u.setPassword(novaPassword);
 
                 transaction.commit(); 
                 
                 if (sessao != null && sessao.getIdUtilizador() == idUtilizador) {
-                    sessao.setNome(novoNome);
-                    sessao.setEmail(novoEmail);
-                    sessao.setPassword(novaPassword);
+                	if (atualizarNome) sessao.setNome(novoNome);
+                    if (atualizarEmail)sessao.setEmail(novoEmail);
+                    if (atualizarPassw) sessao.setPassword(novaPassword);
                 }
                 System.out.println("Dados atualizados com sucesso!");
                 
@@ -670,6 +680,7 @@ public class Gerir {
      * @param fim    última data do intervalo
      */
     public void mostrarEstatisticas(LocalDate inicio, LocalDate fim) {
+    // Validar se as datas são coerentes
     	if(inicio.isAfter(fim)) {
     		System.out.println("A data de inicio não pode ser posterior à de fim. ");
     		return;
