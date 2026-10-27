@@ -659,7 +659,11 @@ public class Gerir {
 				return;
 			}
 			else{
-				session.remove(anuncio);
+				if(anuncio.getEstado() == Estado.PENDENTE) {
+					anuncio.setEstado(Estado.APAGADO_PENDENTE);
+				}else {
+					anuncio.setEstado(Estado.APAGADO_RESOLVIDO);
+				}
 				System.out.println("Anúncio #" + idAnuncio + " eliminado com sucesso.");
 			}
 			transaction.commit();
@@ -707,6 +711,9 @@ public class Gerir {
                 }
                 if (a.getEstado() == Estado.RESOLVIDO) {
                     resolvidos++;
+                }
+                if (a.getEstado() == Estado.APAGADO_RESOLVIDO) {
+                	resolvidos++;
                 }
             }
 
