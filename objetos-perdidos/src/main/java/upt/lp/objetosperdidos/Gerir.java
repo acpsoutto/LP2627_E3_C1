@@ -9,6 +9,7 @@ import org.hibernate.Transaction;
 import org.hibernate.cfg.Configuration;
 import org.apache.commons.validator.routines.EmailValidator;
 import org.passay.*; //password e ver uma bibliteca para o email
+import org.mindrot.jbcrypt.BCrypt;
 
 /**
  * Classe central da lógica da aplicação de objetos perdidos.
@@ -395,7 +396,7 @@ public class Gerir {
 		Transaction t = null;
 		try(Session session = sessionFactory.openSession()){
 			t = session.beginTransaction();
-			session.persist(new Utilizador(nome, email,password, TipoUtilizador.NORMAL));
+			session.persist(new Utilizador(nome, email, gerarHash(password), TipoUtilizador.NORMAL)); //guarda o hash
 			t.commit();
 		} catch(Exception e) {
 			if(t != null && t.isActive()) {
@@ -418,12 +419,9 @@ public class Gerir {
 	 * @throws Exception se as credenciais forem inválidas
 	 */
 	public Utilizador autenticar (String email, String password)throws Exception{
-		Utilizador u;
-		try(Session session = sessionFactory.openSession()){
-			u=procurarPorEmail(email);
-		}
+		Utilizador u= procurarPorEmail(email);
 		
-		if (u== null|| !u.getPassword().equals(password)) {
+		 if (u == null || !passwordCorreta(password, u.getPassword())) {
 			tentativasFalhadas++;
 			if (tentativasFalhadas == 3) {
 				tentativasFalhadas =0;
@@ -530,7 +528,7 @@ public class Gerir {
             System.out.println("Erro: A nova password deve conter uma maiúscula e um carácter especial.");
             return;
         }
-
+	    String hash = gerarHash(novaPassword);
         Transaction transaction = null;
         try (Session session = sessionFactory.openSession()) {
         	transaction = session.beginTransaction();
@@ -539,14 +537,14 @@ public class Gerir {
             	//Atualizar apenas os campos novos
                 if (atualizarNome) u.setNome(novoNome);
                 if (atualizarEmail)u.setEmail(novoEmail);
-                if (atualizarPassw) u.setPassword(novaPassword);
+                if (atualizarPassw) u.setPassword(hash);
 
                 transaction.commit(); 
                 
                 if (sessao != null && sessao.getIdUtilizador() == idUtilizador) {
                 	if (atualizarNome) sessao.setNome(novoNome);
                     if (atualizarEmail)sessao.setEmail(novoEmail);
-                    if (atualizarPassw) sessao.setPassword(novaPassword);
+                    if (atualizarPassw) sessao.setPassword(hash);  
                 }
                 System.out.println("Dados atualizados com sucesso!");
                 
@@ -813,7 +811,7 @@ public class Gerir {
         Transaction t = null;
         try (Session session = sessionFactory.openSession()) {
             t = session.beginTransaction();
-            session.persist(new Utilizador("Gestor", GESTOR_EMAIL, GESTOR_PASSWORD, TipoUtilizador.GESTOR));
+            session.persist(new Utilizador("Gestor", GESTOR_EMAIL, gerarHash(GESTOR_PASSWORD), TipoUtilizador.GESTOR));//guarda o hash
             t.commit();
             System.out.println("Gestor criado.");
         } catch (Exception e) {
@@ -822,5 +820,13 @@ public class Gerir {
             }
             e.printStackTrace();
         }
+    }
+ // Transforma a password normal num hash (é isto que se guarda na BD).
+    private String gerarHash(String password) {
+        return BCrypt.hashpw(password, BCrypt.gensalt());
+    }
+ // Verifica se a password escrita corresponde ao hash guardado na BD.
+    private boolean passwordCorreta(String passwordEscrita, String hashGuardado) {
+        return BCrypt.checkpw(passwordEscrita, hashGuardado);
     }
 }
