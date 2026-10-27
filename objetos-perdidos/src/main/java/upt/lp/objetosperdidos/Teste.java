@@ -45,6 +45,7 @@ public class Teste {
 		Scanner sc = new Scanner(System.in);
 		Gerir gr = new Gerir();
 		gr.setup();
+		gr.criarGestorSeNaoExistir();
 		int opL= 1;
 		
         //login

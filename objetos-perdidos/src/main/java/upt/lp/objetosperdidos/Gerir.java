@@ -40,6 +40,9 @@ public class Gerir {
     
     // Validador de emails (Apache Commons Validator): criado uma só vez.
     private EmailValidator validadorEmail = EmailValidator.getInstance();
+    
+    private static final String GESTOR_EMAIL = "gestor@upt.pt";
+    private static final String GESTOR_PASSWORD = "Gestor@123";
 
 	/**
 	 * Prepara a ligação à base de dados. Deve ser chamado uma vez, no início do programa.
@@ -801,4 +804,23 @@ public class Gerir {
     				e.printStackTrace();
     			}
     	}
+    public void criarGestorSeNaoExistir() {
+        // Se já existe um utilizador com este email na BD, não faz nada
+        if (procurarPorEmail(GESTOR_EMAIL) != null) {
+            return;
+        }
+
+        Transaction t = null;
+        try (Session session = sessionFactory.openSession()) {
+            t = session.beginTransaction();
+            session.persist(new Utilizador("Gestor", GESTOR_EMAIL, GESTOR_PASSWORD, TipoUtilizador.GESTOR));
+            t.commit();
+            System.out.println("Gestor criado.");
+        } catch (Exception e) {
+            if (t != null && t.isActive()) {
+                t.rollback();
+            }
+            e.printStackTrace();
+        }
+    }
 }
