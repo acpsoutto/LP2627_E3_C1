@@ -351,6 +351,15 @@ public class Gerir {
 			}
 		}
 		
+		public List<Chat> listarChatsDenunciadosParaGestor(){
+			try(Session session = sessionFactory.openSession()){
+				String hql = "select distinct d.chat from Denuncia d " +
+	                         "where d.denunciado.idUtilizador in " +
+	                         "(select d2.denunciado.idUtilizador from Denuncia d2 group by d2.denunciado.idUtilizador having count(d2) >= 10)";
+				return session.createQuery(hql, Chat.class).getResultList();
+			}
+		}
+		
 	/**
 	 * Regista uma nova conta de utilizador do tipo {@link TipoUtilizador#NORMAL}.
 	 * <p>
@@ -723,4 +732,73 @@ public class Gerir {
             System.out.println("Objetos com Match (Resolvidos): " + resolvidos);
         }
     }
+    
+    public void denunciarUtilizador(int idChat, int idDenunciante) {
+    	Transaction transaction = null;
+    	try(Session session = sessionFactory.openSession()){
+    		transaction = session.beginTransaction();
+    		
+    		Chat chat = session.get(Chat.class, idChat);
+    		Utilizador denunciante = session.get(Utilizador.class, idDenunciante);
+    		
+    		if(chat == null || denunciante == null) {
+    			System.out.println("Chat ou utilizador não encontrado.");
+    			transaction.rollback();
+    			return;
+    		}
+    		
+    		//Ver quem é o utilizador denunciado
+    		Utilizador denunciado = null;
+    		for(Utilizador u : chat.getUtilizador()) {
+    			if(u.getIdUtilizador() != denunciante.getIdUtilizador()) {
+    				denunciado = u;
+    				break;
+    			}
+    		}
+    		
+    		//Não deixa que utilizador se denuncie a si próprio
+    		if(denunciado == null || denunciado.getIdUtilizador() == denunciante.getIdUtilizador()) {
+    			System.out.println("Não pode denunciar-se a si próprio.");
+    			transaction.rollback();
+    			return;
+    		}
+    		
+    		//Verifica se utilizador já denunciou este chat
+    		Long jaDenunciou = session.createQuery(
+                    "select count(d) from Denuncia d where d.denunciante.idUtilizador = :idU and d.chat.idChat = :idC", Long.class)
+                    .setParameter("idU", denunciante.getIdUtilizador())
+                    .setParameter("idC", chat.getIdChat())
+                    .getSingleResult();
+    		
+    		if(jaDenunciou > 0) {
+    			System.out.println("Já denunciou este utilizador neste chat.");
+    			transaction.rollback();
+    			return;
+    		}
+    		
+    		//Guarda a nova denuncia
+    		Denuncia novaDenuncia = new Denuncia(denunciante, denunciado, chat);
+    		session.persist(novaDenuncia);
+    		
+    		
+    		//Conta o numero total de denuncias acumuladas por este utilizador
+    		Long totalDenuncias = session.createQuery(
+                    "select count(d) from Denuncia d where d.denunciado.idUtilizador = :idD", Long.class)
+                    .setParameter("idD", denunciado.getIdUtilizador())
+                    .getSingleResult();
+
+            transaction.commit();
+            System.out.println("Denúncia registada com sucesso. Total de denúncias do utilizador: " + totalDenuncias);
+
+            if (totalDenuncias >= 10) {
+                System.out.println("[ALERTA] O utilizador " + denunciado.getNome() + " atingiu 10 denúncias! O Gestor foi alertado e tem agora acesso ao chat.");
+            }
+    			
+    		} 	catch (Exception e) {
+    				if(transaction != null && transaction.isActive()) {
+    					transaction.rollback();
+    				}
+    				e.printStackTrace();
+    			}
+    	}
 }
