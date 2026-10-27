@@ -643,20 +643,24 @@ public class Gerir {
     
     /**
      * Elimina um anúncio da base de dados, juntamente com os chats e mensagens associados.
-     * Se o anúncio não existir, escreve "Anúncio não encontrado.".
+     * Se o anúncio não existir ou o utilizador não for o dono do anúncio, escreve "Anúncio não encontrado.".
      *
      * @param idAnuncio identificador do anúncio a eliminar
+     * @param idutilizador identificador do utilizador a tentar eleminar anuncio
      */
-    public void eliminarAnuncio(int idAnuncio) {
+    public void eliminarAnuncio(int idAnuncio,int idutilizador) {
 		Transaction transaction = null;
 		try (Session session = sessionFactory.openSession()) {
 			transaction = session.beginTransaction();
 			Anuncio anuncio = session.get(Anuncio.class, idAnuncio);
-			if (anuncio != null) {
+			
+			if(anuncio == null || anuncio.getUtilizador().getIdUtilizador() != idutilizador) {
+				System.out.println("Anúncio não encontrado.");
+				return;
+			}
+			else{
 				session.remove(anuncio);
 				System.out.println("Anúncio #" + idAnuncio + " eliminado com sucesso.");
-			} else {
-				System.out.println("Anúncio não encontrado.");
 			}
 			transaction.commit();
 		} catch (Exception e) {
@@ -676,13 +680,12 @@ public class Gerir {
      * @param fim    última data do intervalo
      */
     public void mostrarEstatisticas(LocalDate inicio, LocalDate fim) {
-    	// Validar se as datas são coerentes
-        if (inicio.isAfter(fim)) {
-            System.out.println(
-                    "A data de início não pode ser posterior à data de fim.");
-            return;
-        }
-    	try (Session session = sessionFactory.openSession()) {
+    // Validar se as datas são coerentes
+    	if(inicio.isAfter(fim)) {
+    		System.out.println("A data de inicio não pode ser posterior à de fim. ");
+    		return;
+    	}
+        try (Session session = sessionFactory.openSession()) {
             List<Anuncio> lista = session
                     .createQuery(
                             "from Anuncio a " +

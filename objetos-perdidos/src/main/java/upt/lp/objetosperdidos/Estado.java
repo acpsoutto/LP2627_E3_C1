@@ -10,5 +10,7 @@ public enum Estado {
 	/** O anúncio está ativo e o objeto ainda não foi devolvido ou recuperado. */
 	PENDENTE, 
 	/** O objeto foi devolvido ou recuperado, e o anúncio foi dado como concluído. */
-	RESOLVIDO
+	RESOLVIDO,
+	/** O objeto foi devolvido ou recuperado, e o anúncio foi dado como apagado. */
+	APAGADO
 }
