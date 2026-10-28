@@ -348,7 +348,9 @@ public class Teste {
 										gr.enviarMensagem(idChat, gr.getPerfil().getIdUtilizador(), msg);
 									}
 								}else if(opChat == 2){
-									gr.denunciarUtilizador(idChat, gr.getPerfil().getIdUtilizador());
+									System.out.println("Motivo pela denuncia: ");
+									String motivo = sc.nextLine();
+									gr.denunciarUtilizador(idChat, gr.getPerfil().getIdUtilizador(), motivo);
 								}
 								
 						}
@@ -441,6 +443,33 @@ public class Teste {
 	                    		
 	                    		if(idChatGestor != 0) {
 	                    			gr.mostrarMensagensChat(idChatGestor);
+	                    			while(true) {
+	                    				System.out.println("Resolver denuncia (1- Descartar denuncia | 2- Confirmar denuncia | 3- Banir utilizador | 0- Voltar: ");
+	                    				int den = inserirInt(sc);
+	                    				switch (den) {
+	                    				case 1:
+	                    					//gr.passarDenunciaResolvida();
+	                    				break;
+	                    				case 2:
+	                    					//gr.passarDenunciaResolvida();
+	                    					//gr.incrementarDenunciasValidas();
+	                    					// verifica se o utilizador chegou a 5 denuncias confirmadas, marcar todos os anuncios e outras denuncias desse utilizador como apagadas ou resolvidas respetivamente
+	          
+	                    				break;
+	                    				case 3:
+	                    					//gr.banirUtilizador();
+	                    				break;
+	                    				case 0:
+	                    				break;
+	                    				default:
+	                    					System.out.println("Opção invalida");
+	                    				}
+	                    				if(den>=0 && den<=2) {
+	                    					break;
+	                    				}
+	                    			}
+	                    			
+	                    			
 	                    		}
 	                    	}
 	                    break;	

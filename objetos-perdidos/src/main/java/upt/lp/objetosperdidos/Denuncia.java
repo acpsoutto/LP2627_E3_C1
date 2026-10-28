@@ -31,13 +31,24 @@ public class Denuncia {
 	@Column(nullable = false)
 	private LocalDateTime dataHora;
 	
+	@Column(nullable = false)
+	private String motivo;
+	
+	/** Estado do anúncio (PENDENTE ou RESOLVIDO). Guardado na base de dados como texto. */
+	@Enumerated(EnumType.STRING)
+	@Column(nullable = false, length = 10)
+	private Estado estado;
+	
+	
 	public Denuncia() {}
 	
-	public Denuncia(Utilizador denunciante, Utilizador denunciado, Chat chat) {
+	public Denuncia(Utilizador denunciante, Utilizador denunciado, Chat chat, String motivo) {
 		this.denunciado = denunciado;
 		this.denunciante = denunciante;
 		this.chat = chat;
 		this.dataHora = LocalDateTime.now();
+		this.motivo = motivo;
+		this.estado = Estado.PENDENTE;
 	}
 	
 	public int getIdDenuncia() {

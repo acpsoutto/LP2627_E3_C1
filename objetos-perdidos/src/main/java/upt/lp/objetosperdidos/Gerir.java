@@ -358,8 +358,8 @@ public class Gerir {
 			try(Session session = sessionFactory.openSession()){
 				String hql = "select distinct d.chat from Denuncia d " +
 	                         "where d.denunciado.idUtilizador in " +
-	                         "(select d2.denunciado.idUtilizador from Denuncia d2 group by d2.denunciado.idUtilizador having count(d2) >= 10)";
-				return session.createQuery(hql, Chat.class).getResultList();
+	                         "(select d2.denunciado.idUtilizador from Denuncia d2 group by d2.denunciado.idUtilizador having count(d2) >= 3)";
+				return session.createQuery(hql, Chat.class).setParameter("estado", Estado.PENDENTE).getResultList();
 			}
 		}
 		
@@ -736,7 +736,7 @@ public class Gerir {
         }
     }
     
-    public void denunciarUtilizador(int idChat, int idDenunciante) {
+    public void denunciarUtilizador(int idChat, int idDenunciante, String motivo) {
     	Transaction transaction = null;
     	try(Session session = sessionFactory.openSession()){
     		transaction = session.beginTransaction();
@@ -780,7 +780,7 @@ public class Gerir {
     		}
     		
     		//Guarda a nova denuncia
-    		Denuncia novaDenuncia = new Denuncia(denunciante, denunciado, chat);
+    		Denuncia novaDenuncia = new Denuncia(denunciante, denunciado, chat,motivo);
     		session.persist(novaDenuncia);
     		
     		
@@ -793,8 +793,8 @@ public class Gerir {
             transaction.commit();
             System.out.println("Denúncia registada com sucesso. Total de denúncias do utilizador: " + totalDenuncias);
 
-            if (totalDenuncias >= 10) {
-                System.out.println("[ALERTA] O utilizador " + denunciado.getNome() + " atingiu 10 denúncias! O Gestor foi alertado e tem agora acesso ao chat.");
+            if (totalDenuncias >= 3) {
+                System.out.println("[ALERTA] O utilizador " + denunciado.getNome() + " atingiu 3 denúncias! O Gestor foi alertado e tem agora acesso ao chat.");
             }
     			
     		} 	catch (Exception e) {
