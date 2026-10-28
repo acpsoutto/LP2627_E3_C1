@@ -10,5 +10,7 @@ public enum TipoUtilizador {
 	/** Utilizador normal: pode criar anúncios, reivindicar objetos e usar os chats. */
 	NORMAL,
 	/** Gestor: tem acesso ao menu de gestão, onde pode ver as estatísticas. */
-	GESTOR
+	GESTOR,
+	/** Banido: bloqueia a utilização do programa desse utilizador. */
+	BANIDO
 }
