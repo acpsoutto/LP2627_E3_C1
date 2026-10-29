@@ -829,8 +829,7 @@ public class Gerir {
     private boolean passwordCorreta(String passwordEscrita, String hashGuardado) {
         return BCrypt.checkpw(passwordEscrita, hashGuardado);
     }
-    
-    
+       
     public void resolverDenuncia(int idDenuncia) {
     	Transaction transaction = null;
     	try(Session session = sessionFactory.openSession()){
@@ -854,6 +853,42 @@ public class Gerir {
     		
     		transaction.commit();
     		System.out.println("Denúncia de ID: " + idDenuncia + "resolvida.");
+    		
+    	} catch(Exception e) {
+    		if(transaction != null && transaction.isActive()) {
+    			transaction.rollback();
+    		}
+    		e.printStackTrace();
+    	}
+    }
+    
+    //Verifica as denuncias válidas e bane um utilizador caso este chegue a 5 denuncias validadas
+    public void atualizarBanUtilizador(int idUtilizador) {
+    	Transaction transaction = null;
+    	try(Session session = sessionFactory.openSession()){
+    		transaction = session.beginTransaction();
+    		
+    		Utilizador utilizador = session.get(Utilizador.class, idUtilizador);
+    		if(utilizador == null) {
+    			System.out.println("Utilizador não encontrado.");
+    			transaction.rollback();
+    			return;
+    		}
+    		
+    		Long totalResolvidas = session.createQuery(
+                    "select count(d) from Denuncia d where d.denunciado.idUtilizador = :idU and d.estado = :est", Long.class)
+                    .setParameter("idU", idUtilizador)
+                    .setParameter("est", Estado.RESOLVIDO)
+                    .getSingleResult();
+    		
+    		System.out.println("O utilizador " + utilizador.getNome() + "tem atualmente " + totalResolvidas + "denúncias válidas/resolvidas.");
+    		
+    		if(totalResolvidas >= 5) {
+    			utilizador.setTipo(TipoUtilizador.BANIDO);
+    			session.merge(utilizador);
+    			System.out.println("[ALERTA] O utilizador " + utilizador.getNome() + "atingiu 5 denúnicas válidas e foi automaticamente banido.");
+    		}
+    		transaction.commit();	
     		
     	} catch(Exception e) {
     		if(transaction != null && transaction.isActive()) {
