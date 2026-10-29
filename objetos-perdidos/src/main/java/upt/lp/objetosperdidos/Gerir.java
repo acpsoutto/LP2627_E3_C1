@@ -829,4 +829,38 @@ public class Gerir {
     private boolean passwordCorreta(String passwordEscrita, String hashGuardado) {
         return BCrypt.checkpw(passwordEscrita, hashGuardado);
     }
+    
+    
+    public void resolverDenuncia(int idDenuncia) {
+    	Transaction transaction = null;
+    	try(Session session = sessionFactory.openSession()){
+    		transaction = session.beginTransaction();
+    		
+    		Denuncia denuncia = session.get(Denuncia.class, idDenuncia);
+    		if(denuncia == null) {
+    			System.out.println("Denúncia não encontrada.");
+    			transaction.rollback();
+    			return;
+    		}
+    		
+    		if(denuncia.getEstado() == Estado.RESOLVIDO) {
+    			System.out.println("Esta denúncia já se encontra resolvida.");
+    			transaction.rollback();
+    			return;
+    		}
+    		
+    		denuncia.setEstado(Estado.RESOLVIDO);
+    		session.merge(denuncia);
+    		
+    		transaction.commit();
+    		System.out.println("Denúncia de ID: " + idDenuncia + "resolvida.");
+    		
+    	} catch(Exception e) {
+    		if(transaction != null && transaction.isActive()) {
+    			transaction.rollback();
+    		}
+    		e.printStackTrace();
+    	}
+    }
+    
 }

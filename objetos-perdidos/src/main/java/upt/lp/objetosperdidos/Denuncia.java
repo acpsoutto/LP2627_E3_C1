@@ -51,10 +51,25 @@ public class Denuncia {
 		this.estado = Estado.PENDENTE;
 	}
 	
+	
 	public int getIdDenuncia() {
 		return idDenuncia;
 	}
 	
+	/**
+	 * @return the estado
+	 */
+	public Estado getEstado() {
+		return estado;
+	}
+
+	/**
+	 * @param estado the estado to set
+	 */
+	public void setEstado(Estado estado) {
+		this.estado = estado;
+	}
+
 	public Utilizador getDenunciante() {
 		return denunciante;
 	}
