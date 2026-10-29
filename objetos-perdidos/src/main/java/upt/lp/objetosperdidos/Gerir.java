@@ -419,7 +419,7 @@ public class Gerir {
 	 * @throws Exception se as credenciais forem inválidas
 	 */
 	public Utilizador autenticar (String email, String password)throws Exception{
-		Utilizador u= procurarPorEmail(email);
+		Utilizador u = procurarPorEmail(email);
 		
 		 if (u == null || !passwordCorreta(password, u.getPassword())) {
 			tentativasFalhadas++;
@@ -429,6 +429,11 @@ public class Gerir {
 			}
 			throw new Exception("Credencias inválidas.");
 		}
+		 
+		 if(u.getTipo() == TipoUtilizador.BANIDO) {
+			 throw new Exception("Acesso negado. Esta conta encontra-se banida do sistema.");
+		 }
+		 
         tentativasFalhadas = 0;  
         sessao = u;               
         return u;
@@ -889,6 +894,38 @@ public class Gerir {
     			System.out.println("[ALERTA] O utilizador " + utilizador.getNome() + "atingiu 5 denúnicas válidas e foi automaticamente banido.");
     		}
     		transaction.commit();	
+    		
+    	} catch(Exception e) {
+    		if(transaction != null && transaction.isActive()) {
+    			transaction.rollback();
+    		}
+    		e.printStackTrace();
+    	}
+    }
+    
+    public void banirUtilizadorDiretamente(int idUtilizador) {
+    	Transaction transaction = null;
+    	try(Session session = sessionFactory.openSession()){
+    		transaction = session.beginTransaction();
+    		
+    		Utilizador utilizador = session.get(Utilizador.class, idUtilizador);
+    		if(utilizador == null) {
+    			System.out.println("Utilizador não encontrado.");
+    			transaction.rollback();
+    			return;
+    		}
+    		
+    		if(utilizador.getTipo() == TipoUtilizador.BANIDO) {
+    			System.out.println("Este utilizador já se encontra banido.");
+    			transaction.rollback();
+    			return;
+    		}
+    		
+    		utilizador.setTipo(TipoUtilizador.BANIDO);
+    		session.merge(utilizador);
+    		
+    		transaction.commit();
+    		System.out.println("O utilizador " + utilizador.getNome() + "foi banido do sistema.");
     		
     	} catch(Exception e) {
     		if(transaction != null && transaction.isActive()) {
