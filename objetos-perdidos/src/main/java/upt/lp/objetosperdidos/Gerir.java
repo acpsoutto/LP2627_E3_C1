@@ -419,7 +419,7 @@ public class Gerir {
 	 * @throws Exception se as credenciais forem inválidas
 	 */
 	public Utilizador autenticar (String email, String password)throws Exception{
-		Utilizador u= procurarPorEmail(email);
+		Utilizador u = procurarPorEmail(email);
 		
 		 if (u == null || !passwordCorreta(password, u.getPassword())) {
 			tentativasFalhadas++;
@@ -429,6 +429,11 @@ public class Gerir {
 			}
 			throw new Exception("Credencias inválidas.");
 		}
+		 
+		 if(u.getTipo() == TipoUtilizador.BANIDO) {
+			 throw new Exception("Acesso negado. Esta conta encontra-se banida do sistema.");
+		 }
+		 
         tentativasFalhadas = 0;  
         sessao = u;               
         return u;
@@ -829,4 +834,117 @@ public class Gerir {
     private boolean passwordCorreta(String passwordEscrita, String hashGuardado) {
         return BCrypt.checkpw(passwordEscrita, hashGuardado);
     }
+       
+    public void resolverDenuncia(int idDenuncia, int opcao) {
+    	
+    	Transaction transaction = null;
+    	try(Session session = sessionFactory.openSession()){
+    		transaction = session.beginTransaction();
+    		
+    		Denuncia denuncia = session.get(Denuncia.class, idDenuncia);
+    		if(denuncia == null) {
+    			System.out.println("Denúncia não encontrada.");
+    			transaction.rollback();
+    			return;
+    		}
+    		
+    		if(denuncia.getEstado() != Estado.PENDENTE) {
+    			System.out.println("Denúncia já foi processada anteriormente.");
+    			transaction.rollback();
+    		}
+    		
+    		int idUtilizadorDenunciado = denuncia.getDenunciado().getIdUtilizador();
+    		
+    		if(opcao == 1) {
+    			denuncia.setEstado(Estado.DESCARTADO);
+    			System.out.println("Denúncia # " + idDenuncia + " foi descartada.");
+    		} else {
+    			denuncia.setEstado(Estado.ACEITE);
+    			System.out.println("Denúncia # " + idDenuncia + " foi aceite.");
+    		}
+    		
+    		session.merge(denuncia);
+    		transaction.commit();
+    		
+    		if(opcao == 1) {
+    			atualizarBanUtilizador(idUtilizadorDenunciado);
+    		}
+    		
+    		
+    	} catch(Exception e) {
+    		if(transaction != null && transaction.isActive()) {
+    			transaction.rollback();
+    		}
+    		e.printStackTrace();
+    	}
+    }
+    
+    //Verifica as denuncias válidas e bane um utilizador caso este chegue a 5 denuncias validadas
+    public void atualizarBanUtilizador(int idUtilizador) {
+    	Transaction transaction = null;
+    	try(Session session = sessionFactory.openSession()){
+    		transaction = session.beginTransaction();
+    		
+    		Utilizador utilizador = session.get(Utilizador.class, idUtilizador);
+    		if(utilizador == null) {
+    			System.out.println("Utilizador não encontrado.");
+    			transaction.rollback();
+    			return;
+    		}
+    		
+    		Long totalAceites = session.createQuery(
+                    "select count(d) from Denuncia d where d.denunciado.idUtilizador = :idU and d.estado = :est", Long.class)
+                    .setParameter("idU", idUtilizador)
+                    .setParameter("est", Estado.ACEITE)
+                    .getSingleResult();
+    		
+    		System.out.println("O utilizador " + utilizador.getNome() + "tem atualmente " + totalAceites + "denúncias válidas (aceites).");
+    		
+    		if(totalAceites >= 5) {
+    			utilizador.setTipo(TipoUtilizador.BANIDO);
+    			session.merge(utilizador);
+    			System.out.println("[ALERTA] O utilizador " + utilizador.getNome() + "atingiu 5 denúnicas válidas e foi automaticamente banido.");
+    		}
+    		transaction.commit();	
+    		
+    	} catch(Exception e) {
+    		if(transaction != null && transaction.isActive()) {
+    			transaction.rollback();
+    		}
+    		e.printStackTrace();
+    	}
+    }
+    
+    public void banirUtilizadorDiretamente(int idUtilizador) {
+    	Transaction transaction = null;
+    	try(Session session = sessionFactory.openSession()){
+    		transaction = session.beginTransaction();
+    		
+    		Utilizador utilizador = session.get(Utilizador.class, idUtilizador);
+    		if(utilizador == null) {
+    			System.out.println("Utilizador não encontrado.");
+    			transaction.rollback();
+    			return;
+    		}
+    		
+    		if(utilizador.getTipo() == TipoUtilizador.BANIDO) {
+    			System.out.println("Este utilizador já se encontra banido.");
+    			transaction.rollback();
+    			return;
+    		}
+    		
+    		utilizador.setTipo(TipoUtilizador.BANIDO);
+    		session.merge(utilizador);
+    		
+    		transaction.commit();
+    		System.out.println("O utilizador " + utilizador.getNome() + "foi banido do sistema.");
+    		
+    	} catch(Exception e) {
+    		if(transaction != null && transaction.isActive()) {
+    			transaction.rollback();
+    		}
+    		e.printStackTrace();
+    	}
+    }
+    
 }

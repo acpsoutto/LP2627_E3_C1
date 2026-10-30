@@ -162,6 +162,13 @@ public class Utilizador {
 	}
 	 
 	/**
+	 * @param tipo the tipo to set
+	 */
+	public void setTipo(TipoUtilizador tipo) {
+		this.tipo = tipo;
+	}
+
+	/**
 	 * Devolve uma representação em texto do utilizador, com nome e email.
 	 *
 	 * @return o texto com o nome e o email do utilizador
