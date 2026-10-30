@@ -836,10 +836,6 @@ public class Gerir {
     }
        
     public void resolverDenuncia(int idDenuncia, int opcao) {
-    	if(opcao != 1 && opcao != 2) {
-    		System.out.println("Opção inválida.");
-    		return;
-    	}
     	
     	Transaction transaction = null;
     	try(Session session = sessionFactory.openSession()){
@@ -860,11 +856,11 @@ public class Gerir {
     		int idUtilizadorDenunciado = denuncia.getDenunciado().getIdUtilizador();
     		
     		if(opcao == 1) {
-    			denuncia.setEstado(Estado.ACEITE);
-    			System.out.println("Denúncia # " + idDenuncia + " foi aceite.");
-    		} else {
     			denuncia.setEstado(Estado.DESCARTADO);
     			System.out.println("Denúncia # " + idDenuncia + " foi descartada.");
+    		} else {
+    			denuncia.setEstado(Estado.ACEITE);
+    			System.out.println("Denúncia # " + idDenuncia + " foi aceite.");
     		}
     		
     		session.merge(denuncia);
@@ -942,32 +938,6 @@ public class Gerir {
     		
     		transaction.commit();
     		System.out.println("O utilizador " + utilizador.getNome() + "foi banido do sistema.");
-    		
-    	} catch(Exception e) {
-    		if(transaction != null && transaction.isActive()) {
-    			transaction.rollback();
-    		}
-    		e.printStackTrace();
-    	}
-    }
-    
-    public void alterarEstadoDenuncia(int idDenuncia, Estado novoEstado) {
-    	Transaction transaction = null;
-    	try(Session session = sessionFactory.openSession()){
-    		transaction = session.beginTransaction();
-    		
-    		Denuncia denuncia = session.get(Denuncia.class, idDenuncia);
-    		if(denuncia == null) {
-    			System.out.println("Denúncia não encontrada.");
-    			transaction.rollback();
-    			return;
-    		}
-    		
-    		denuncia.setEstado(novoEstado);
-    		session.merge(denuncia);
-    		
-    		transaction.commit();
-    		System.out.println("Denúncia # " + idDenuncia + "atualizada para o estado: " + novoEstado + ".");
     		
     	} catch(Exception e) {
     		if(transaction != null && transaction.isActive()) {
