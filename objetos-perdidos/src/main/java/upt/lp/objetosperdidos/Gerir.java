@@ -835,7 +835,12 @@ public class Gerir {
         return BCrypt.checkpw(passwordEscrita, hashGuardado);
     }
        
-    public void resolverDenuncia(int idDenuncia) {
+    public void resolverDenuncia(int idDenuncia, int opcao) {
+    	if(opcao != 1 && opcao != 2) {
+    		System.out.println("Opção inválida.");
+    		return;
+    	}
+    	
     	Transaction transaction = null;
     	try(Session session = sessionFactory.openSession()){
     		transaction = session.beginTransaction();
@@ -847,17 +852,28 @@ public class Gerir {
     			return;
     		}
     		
-    		if(denuncia.getEstado() == Estado.RESOLVIDO) {
-    			System.out.println("Esta denúncia já se encontra resolvida.");
+    		if(denuncia.getEstado() != Estado.PENDENTE) {
+    			System.out.println("Denúncia já foi processada anteriormente.");
     			transaction.rollback();
-    			return;
     		}
     		
-    		denuncia.setEstado(Estado.RESOLVIDO);
-    		session.merge(denuncia);
+    		int idUtilizadorDenunciado = denuncia.getDenunciado().getIdUtilizador();
     		
+    		if(opcao == 1) {
+    			denuncia.setEstado(Estado.ACEITE);
+    			System.out.println("Denúncia # " + idDenuncia + " foi aceite.");
+    		} else {
+    			denuncia.setEstado(Estado.DESCARTADO);
+    			System.out.println("Denúncia # " + idDenuncia + " foi descartada.");
+    		}
+    		
+    		session.merge(denuncia);
     		transaction.commit();
-    		System.out.println("Denúncia de ID: " + idDenuncia + "resolvida.");
+    		
+    		if(opcao == 1) {
+    			atualizarBanUtilizador(idUtilizadorDenunciado);
+    		}
+    		
     		
     	} catch(Exception e) {
     		if(transaction != null && transaction.isActive()) {
