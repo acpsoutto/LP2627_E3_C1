@@ -835,7 +835,7 @@ public class Gerir {
         return BCrypt.checkpw(passwordEscrita, hashGuardado);
     }
        
-    public void resolverDenuncia(int idDenuncia, int opcao) {
+    public void resolverDenuncia(int idDenuncia, Estado estado) {
     	
     	Transaction transaction = null;
     	try(Session session = sessionFactory.openSession()){
@@ -855,18 +855,13 @@ public class Gerir {
     		
     		int idUtilizadorDenunciado = denuncia.getDenunciado().getIdUtilizador();
     		
-    		if(opcao == 1) {
-    			denuncia.setEstado(Estado.DESCARTADO);
-    			System.out.println("Denúncia # " + idDenuncia + " foi descartada.");
-    		} else {
-    			denuncia.setEstado(Estado.ACEITE);
-    			System.out.println("Denúncia # " + idDenuncia + " foi aceite.");
-    		}
+    		denuncia.setEstado(estado);
+    		System.out.println("Denúncia # " + idDenuncia + " foi "+ estado );
     		
     		session.merge(denuncia);
     		transaction.commit();
     		
-    		if(opcao == 1) {
+    		if(denuncia.getEstado() == Estado.ACEITE) {
     			atualizarBanUtilizador(idUtilizadorDenunciado);
     		}
     		

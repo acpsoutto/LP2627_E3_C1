@@ -449,19 +449,15 @@ public class Teste {
 	                    				switch (den) {
 		                    				case 1:
 		                    					System.out.println("Insira o ID da denúncia que quer descartar: ");
-		                    					int idDenunciaDescartar = inserirInt(sc);
-		                    					gr.alterarEstadoDenuncia(idDenunciaDescartar, Estado.DESCARTADO);
+		                    					int idDenuncia = inserirInt(sc);
+		                    					gr.resolverDenuncia(idDenuncia, Estado.DESCARTADO);
 		                    					break;
 		                    					
 		                    				case 2:
 		                    					System.out.println("Insira o ID da denúncia que quer aceitar: ");
-		                    					int idDenuncia = inserirInt(sc);
+		                    					idDenuncia = inserirInt(sc);
 		                    					
-		                    					System.out.println("Insira o ID do utilizador denunciado: ");
-		                    					int idUtilizadorDenunciado = inserirInt(sc);
-		                    					
-		                    					gr.alterarEstadoDenuncia(idDenuncia, Estado.ACEITE);
-		                    					gr.atualizarBanUtilizador(idUtilizadorDenunciado);
+		                    					gr.resolverDenuncia(idDenuncia, Estado.ACEITE);
 		                    					break;
 		                    				
 		                    				case 3:
