@@ -880,15 +880,15 @@ public class Gerir {
     			return;
     		}
     		
-    		Long totalResolvidas = session.createQuery(
+    		Long totalAceites = session.createQuery(
                     "select count(d) from Denuncia d where d.denunciado.idUtilizador = :idU and d.estado = :est", Long.class)
                     .setParameter("idU", idUtilizador)
-                    .setParameter("est", Estado.RESOLVIDO)
+                    .setParameter("est", Estado.ACEITE)
                     .getSingleResult();
     		
-    		System.out.println("O utilizador " + utilizador.getNome() + "tem atualmente " + totalResolvidas + "denúncias válidas/resolvidas.");
+    		System.out.println("O utilizador " + utilizador.getNome() + "tem atualmente " + totalAceites + "denúncias válidas (aceites).");
     		
-    		if(totalResolvidas >= 5) {
+    		if(totalAceites >= 5) {
     			utilizador.setTipo(TipoUtilizador.BANIDO);
     			session.merge(utilizador);
     			System.out.println("[ALERTA] O utilizador " + utilizador.getNome() + "atingiu 5 denúnicas válidas e foi automaticamente banido.");
@@ -926,6 +926,32 @@ public class Gerir {
     		
     		transaction.commit();
     		System.out.println("O utilizador " + utilizador.getNome() + "foi banido do sistema.");
+    		
+    	} catch(Exception e) {
+    		if(transaction != null && transaction.isActive()) {
+    			transaction.rollback();
+    		}
+    		e.printStackTrace();
+    	}
+    }
+    
+    public void alterarEstadoDenuncia(int idDenuncia, Estado novoEstado) {
+    	Transaction transaction = null;
+    	try(Session session = sessionFactory.openSession()){
+    		transaction = session.beginTransaction();
+    		
+    		Denuncia denuncia = session.get(Denuncia.class, idDenuncia);
+    		if(denuncia == null) {
+    			System.out.println("Denúncia não encontrada.");
+    			transaction.rollback();
+    			return;
+    		}
+    		
+    		denuncia.setEstado(novoEstado);
+    		session.merge(denuncia);
+    		
+    		transaction.commit();
+    		System.out.println("Denúncia # " + idDenuncia + "atualizada para o estado: " + novoEstado + ".");
     		
     	} catch(Exception e) {
     		if(transaction != null && transaction.isActive()) {
