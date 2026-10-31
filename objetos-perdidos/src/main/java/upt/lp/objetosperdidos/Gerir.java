@@ -144,17 +144,17 @@ public class Gerir {
 		        transaction = session.beginTransaction();
 		        Anuncio anuncio = session.get(Anuncio.class, anuncioID);
 		        Utilizador utilizador = session.get(Utilizador.class, utiID);
-		        if ((anuncio instanceof AnuncioPerdido && op==2) ||(anuncio instanceof AnuncioEncontrado && op==1)) {
-		        	System.out.println("Anuncio não encontrado");
-		        	transaction.rollback();
-		        	return;
-		        	}
-
 		        if (anuncio == null || utilizador == null) {
 		            System.out.println("Anúncio ou utilizador não encontrado.");
 		            transaction.rollback();
 		            return;
 		        }
+		        
+		        if ((anuncio instanceof AnuncioPerdido && op==2) ||(anuncio instanceof AnuncioEncontrado && op==1)) {
+		        	System.out.println("Anuncio não encontrado");
+		        	transaction.rollback();
+		        	return;
+		        	}
 		        
 		        Utilizador dono = anuncio.getUtilizador();
 		        
@@ -358,7 +358,8 @@ public class Gerir {
 		public List<Chat> listarChatsDenunciadosParaGestor(){
 			try(Session session = sessionFactory.openSession()){
 				String hql = "select distinct d.chat from Denuncia d " +
-	                         "where d.denunciado.idUtilizador in " +
+						 	"where d.estado = :estado " +
+	                         "and d.denunciado.idUtilizador in " +
 	                         "(select d2.denunciado.idUtilizador from Denuncia d2 group by d2.denunciado.idUtilizador having count(d2) >= 3)";
 				return session.createQuery(hql, Chat.class).setParameter("estado", Estado.PENDENTE).getResultList();
 			}
@@ -429,10 +430,6 @@ public class Gerir {
 			}
 			throw new Exception("Credencias inválidas.");
 		}
-		 
-		 if(u.getTipo() == TipoUtilizador.BANIDO) {
-			 throw new Exception("Acesso negado. Esta conta encontra-se banida do sistema.");
-		 }
 		 
         tentativasFalhadas = 0;  
         sessao = u;               
@@ -835,12 +832,20 @@ public class Gerir {
         return BCrypt.checkpw(passwordEscrita, hashGuardado);
     }
        
-    public void resolverDenuncia(int idDenuncia, Estado estado) {
+    public void resolverDenuncia(int idChat, Estado estado) {
     	
     	Transaction transaction = null;
     	try(Session session = sessionFactory.openSession()){
     		transaction = session.beginTransaction();
     		
+            List<Denuncia> denuncias = session.createQuery(
+                    "from Denuncia d where d.chat.idChat = :idChat and d.estado = :pendente", Denuncia.class)
+                .setParameter("idChat", idChat)
+                .setParameter("pendente", Estado.PENDENTE)
+                .getResultList();
+            
+           int idDenuncia = denuncias.get(0).getIdDenuncia();
+        	
     		Denuncia denuncia = session.get(Denuncia.class, idDenuncia);
     		if(denuncia == null) {
     			System.out.println("Denúncia não encontrada.");
