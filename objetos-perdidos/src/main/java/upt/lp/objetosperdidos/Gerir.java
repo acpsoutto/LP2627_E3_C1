@@ -1,6 +1,7 @@
 package upt.lp.objetosperdidos;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import org.hibernate.Session;
@@ -698,46 +699,97 @@ public class Gerir {
      * @param inicio primeira data do intervalo
      * @param fim    última data do intervalo
      */
-    public void mostrarEstatisticas(LocalDate inicio, LocalDate fim) {
-    // Validar se as datas são coerentes
-    	if(inicio.isAfter(fim)) {
-    		System.out.println("A data de inicio não pode ser posterior à de fim. ");
-    		return;
-    	}
-        try (Session session = sessionFactory.openSession()) {
-            List<Anuncio> lista = session
-                    .createQuery(
-                            "from Anuncio a " +
-                            "where a.dataPublicacao >= :inicio and a.dataPublicacao <= :fim",
-                            Anuncio.class)
-                    .setParameter("inicio", inicio)
-                    .setParameter("fim", fim)
-                    .getResultList();
 
-            int perdidos = 0;
-            int encontrados = 0;
-            int resolvidos = 0;
+public void mostrarEstatisticas(LocalDate inicio, LocalDate fim) {
 
-            for (Anuncio a : lista) {
-                if (a instanceof AnuncioPerdido) {
-                    perdidos++;
-                } else if (a instanceof AnuncioEncontrado) {
-                    encontrados++;
-                }
-                if (a.getEstado() == Estado.RESOLVIDO) {
-                    resolvidos++;
-                }
-                if (a.getEstado() == Estado.APAGADO_RESOLVIDO) {
-                	resolvidos++;
-                }
-            }
-
-            System.out.println("\n--- Estatísticas (" + inicio + " a " + fim + ") ---");
-            System.out.println("Objetos Perdidos: " + perdidos);
-            System.out.println("Objetos Encontrados: " + encontrados);
-            System.out.println("Objetos com Match (Resolvidos): " + resolvidos);
-        }
+    // Validar las fechas
+    if (inicio == null || fim == null || inicio.isAfter(fim)) {
+        System.out.println("Intervalo de datas inválido.");
+        return;
     }
+
+    // Rango de fechas para las denuncias
+    LocalDateTime desde = inicio.atStartOfDay();
+    LocalDateTime ate = fim.plusDays(1).atStartOfDay();
+
+    try (Session session = sessionFactory.openSession()) {
+
+        // 1. Contar anuncios perdidos (incluye anuncios apagados)
+        long perdidos = contarAnuncios(
+                session, "AnuncioPerdido", null,
+                inicio, fim, null);
+
+        // 2. Contar anuncios encontrados (incluye anuncios apagados)
+        long encontrados = contarAnuncios(
+                session, "AnuncioEncontrado", null,
+                inicio, fim, null);
+
+        // 3. Contar objetos perdidos que dieron match
+        long resolvidos = contarAnuncios(
+                session, "AnuncioPerdido",
+                "a.estado in (:estados)",
+                inicio, fim,
+                List.of(Estado.RESOLVIDO, Estado.APAGADO_RESOLVIDO));
+
+        // 4. Categoría más frecuente de objetos perdidos
+        String categoriaPerdida = categoriaMaisFrequente(
+                session, "AnuncioPerdido", inicio, fim);
+
+        // 5. Categoría más frecuente de objetos encontrados
+        String categoriaEncontrada = categoriaMaisFrequente(
+                session, "AnuncioEncontrado", inicio, fim);
+
+        // 6. Total de denuncias registradas en el período
+        Long totalDenuncias = session.createQuery(
+                "select count(d) from Denuncia d " +
+                "where d.dataHora >= :desde and d.dataHora < :ate",
+                Long.class)
+                .setParameter("desde", desde)
+                .setParameter("ate", ate)
+                .getSingleResult();
+
+        // 7. Denuncias registradas en el período que están aceptadas
+        Long denunciasAceites = session.createQuery(
+                "select count(d) from Denuncia d " +
+                "where d.estado = :estado " +
+                "and d.dataHora >= :desde and d.dataHora < :ate",
+                Long.class)
+                .setParameter("estado", Estado.ACEITE)
+                .setParameter("desde", desde)
+                .setParameter("ate", ate)
+                .getSingleResult();
+
+        // 8. Total actual de utilizadores baneados (sin filtro de fechas)
+        Long utilizadoresBanidos = session.createQuery(
+                "select count(u) from Utilizador u " +
+                "where u.tipo = :tipo",
+                Long.class)
+                .setParameter("tipo", TipoUtilizador.BANIDO)
+                .getSingleResult();
+
+        // 9. Mostrar estadísticas
+        System.out.println("\n--- Estatísticas (" + inicio + " a " + fim + ") ---");
+
+        System.out.println("\nANÚNCIOS");
+        System.out.println("Objetos Perdidos: " + perdidos);
+        System.out.println("Objetos Encontrados: " + encontrados);
+        System.out.println("Objetos Perdidos que deram Match: " + resolvidos);
+
+        System.out.println("\nCATEGORIAS");
+        System.out.println("Categoria mais perdida: " + categoriaPerdida);
+        System.out.println("Categoria mais encontrada: " + categoriaEncontrada);
+
+        System.out.println("\nDENÚNCIAS");
+        System.out.println("Total de denúncias: " + totalDenuncias);
+        System.out.println("Denúncias aceites (das registadas no período): "
+                + denunciasAceites);
+
+        System.out.println("\nUTILIZADORES");
+        System.out.println("Utilizadores banidos (total atual): "
+                + utilizadoresBanidos);
+    }
+}
+
     
     public void denunciarUtilizador(int idChat, int idDenunciante, String motivo) {
     	Transaction transaction = null;
@@ -959,4 +1011,61 @@ public class Gerir {
         }
     }
     
+    //Metodos auxiliares
+
+	private long contarAnuncios(
+	        Session session,
+	        String entidade,
+	        String condicao,
+	        LocalDate inicio,
+	        LocalDate fim,
+	        List<Estado> estados) {
+	
+	    String hql = "select count(a) from " + entidade + " a " +
+	                 "where a.dataPublicacao >= :inicio " +
+	                 "and a.dataPublicacao <= :fim";
+	
+	    if (condicao != null && !condicao.isEmpty()) {
+	        hql += " and " + condicao;
+	    }
+	
+	    var query = session.createQuery(hql, Long.class)
+	            .setParameter("inicio", inicio)
+	            .setParameter("fim", fim);
+	
+	    if (estados != null && !estados.isEmpty()) {
+	        query.setParameterList("estados", estados);
+	    }
+	
+	    return query.getSingleResult();
+	}
+
+
+	private String categoriaMaisFrequente(
+	        Session session,
+	        String entidade,
+	        LocalDate inicio,
+	        LocalDate fim) {
+	
+	    String hql = "select a.categoria, count(a) from " + entidade + " a " +
+	                 "where a.dataPublicacao >= :inicio " +
+	                 "and a.dataPublicacao <= :fim " +
+	                 "group by a.categoria " +
+	                 "order by count(a) desc, a.categoria asc";
+	
+	    List<Object[]> resultados = session.createQuery(hql, Object[].class)
+	            .setParameter("inicio", inicio)
+	            .setParameter("fim", fim)
+	            .setMaxResults(1)
+	            .getResultList();
+	
+	    if (resultados.isEmpty()) {
+	        return "0";
+	    }
+	
+	    Object[] resultado = resultados.get(0);
+	
+	    return resultado[0] + " (" + resultado[1] + ")";
+	}
+
 }
