@@ -899,6 +899,7 @@ public class Gerir {
     			utilizador.setTipo(TipoUtilizador.BANIDO);
     			session.merge(utilizador);
     			System.out.println("[ALERTA] O utilizador " + utilizador.getNome() + "atingiu 5 denúnicas válidas e foi automaticamente banido.");
+    			apagarAnunciosDoUtilizador(session,utilizador);
     		}
     		transaction.commit();	
     		
@@ -933,6 +934,7 @@ public class Gerir {
     		
     		transaction.commit();
     		System.out.println("O utilizador " + utilizador.getNome() + "foi banido do sistema.");
+    		apagarAnunciosDoUtilizador(session,utilizador);
     		
     	} catch(Exception e) {
     		if(transaction != null && transaction.isActive()) {
@@ -940,6 +942,21 @@ public class Gerir {
     		}
     		e.printStackTrace();
     	}
+    }
+    
+    private void apagarAnunciosDoUtilizador(Session session, Utilizador utilizador) {
+        List<Anuncio> anuncios = session.createQuery(
+                "select a from Anuncio a where a.utilizador.idUtilizador = :idU", Anuncio.class)
+                .setParameter("idU", utilizador.getIdUtilizador())
+                .getResultList();
+
+        for (Anuncio a : anuncios) {
+            if (a.getEstado() == Estado.PENDENTE) {
+                a.setEstado(Estado.APAGADO_PENDENTE);
+            } else if (a.getEstado() == Estado.RESOLVIDO) {
+                a.setEstado(Estado.APAGADO_RESOLVIDO);
+            }
+        }
     }
     
 }
