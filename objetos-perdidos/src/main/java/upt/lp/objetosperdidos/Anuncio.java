@@ -47,7 +47,7 @@ public abstract class Anuncio {
 	
 	/** Estado do anúncio (PENDENTE ou RESOLVIDO). Guardado na base de dados como texto. */
 	@Enumerated(EnumType.STRING)
-	@Column(nullable = false, length = 10)
+	@Column(nullable = false, length = 20)
 	private Estado estado;
 	
 	/** Descrição do objeto. Obrigatória, com um máximo de 500 caracteres. */

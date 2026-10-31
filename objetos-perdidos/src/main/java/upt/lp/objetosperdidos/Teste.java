@@ -110,6 +110,10 @@ public class Teste {
 					String pass = sc.nextLine();
 					try {
 						gr.autenticar(email, pass);
+						if(gr.getPerfil().getTipo()== TipoUtilizador.BANIDO) {
+							System.out.println("Login bloqueado! Utilizador Banido");
+							break;
+						}
 						autenticado = true;
 						System.out.println("Login efetuado com sucesso! Bem-vindo(a), " + gr.getPerfil().getNome());
 						break;
@@ -448,16 +452,13 @@ public class Teste {
 	                    				int den = inserirInt(sc);
 	                    				switch (den) {
 		                    				case 1:
-		                    					System.out.println("Insira o ID da denúncia que quer descartar: ");
-		                    					int idDenuncia = inserirInt(sc);
-		                    					gr.resolverDenuncia(idDenuncia, Estado.DESCARTADO);
+		                    					
+		                    					gr.resolverDenuncia(idChatGestor, Estado.DESCARTADO);
 		                    					break;
 		                    					
 		                    				case 2:
-		                    					System.out.println("Insira o ID da denúncia que quer aceitar: ");
-		                    					idDenuncia = inserirInt(sc);
-		                    					
-		                    					gr.resolverDenuncia(idDenuncia, Estado.ACEITE);
+		                    				
+		                    					gr.resolverDenuncia(idChatGestor, Estado.ACEITE);
 		                    					break;
 		                    				
 		                    				case 3:
