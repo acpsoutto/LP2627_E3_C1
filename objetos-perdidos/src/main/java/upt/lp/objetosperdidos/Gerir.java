@@ -285,12 +285,21 @@ public class Gerir {
 
 				
 				for (Chat c : todosOsChats) {
-					if (c.getCriador().getIdUtilizador() == u.getIdUtilizador()
-							|| c.getInteressado().getIdUtilizador() == u.getIdUtilizador()) {
-						if(c.getAnuncio().getEstado() == Estado.PENDENTE) {
-							meusChats.add(c);
+						if (c.getCriador().getIdUtilizador() == u.getIdUtilizador()						
+								|| c.getInteressado().getIdUtilizador() == u.getIdUtilizador()) {
+							if(c.getAnuncio().getEstado() == Estado.PENDENTE) {
+								meusChats.add(c);
+							}
 						}
-					}
+				}
+			}
+			return meusChats;
+		}
+		
+		public List<Chat> retirarOsBanidos(List<Chat> meusChats){
+			for(Chat c : meusChats) {
+				if(c.getInteressado().getTipo() == TipoUtilizador.BANIDO || c.getCriador().getTipo() == TipoUtilizador.BANIDO ) {
+					meusChats.remove(c);
 				}
 			}
 			return meusChats;
@@ -968,37 +977,56 @@ public class Gerir {
     	}
     }
     
-    public void banirUtilizadorDiretamente(int idUtilizador) {
-    	Transaction transaction = null;
-    	try(Session session = sessionFactory.openSession()){
-    		transaction = session.beginTransaction();
-    		
-    		Utilizador utilizador = session.get(Utilizador.class, idUtilizador);
-    		if(utilizador == null) {
-    			System.out.println("Utilizador não encontrado.");
-    			transaction.rollback();
-    			return;
-    		}
-    		
-    		if(utilizador.getTipo() == TipoUtilizador.BANIDO) {
-    			System.out.println("Este utilizador já se encontra banido.");
-    			transaction.rollback();
-    			return;
-    		}
-    		
-    		utilizador.setTipo(TipoUtilizador.BANIDO);
-    		session.merge(utilizador);
-    		
-    		transaction.commit();
-    		System.out.println("O utilizador " + utilizador.getNome() + "foi banido do sistema.");
-    		apagarAnunciosDoUtilizador(session,utilizador);
-    		
-    	} catch(Exception e) {
-    		if(transaction != null && transaction.isActive()) {
-    			transaction.rollback();
-    		}
-    		e.printStackTrace();
-    	}
+    public void banirUtilizadorDiretamente(int idChat) {
+        try (Session session = sessionFactory.openSession()) {
+            Transaction t = session.beginTransaction();
+            try {
+                List<Denuncia> denunciasDoChat = session.createQuery(
+                        "from Denuncia d where d.chat.idChat = :idChat and d.estado = :pendente", Denuncia.class)
+                    .setParameter("idChat", idChat)
+                    .setParameter("pendente", Estado.PENDENTE)
+                    .getResultList();
+
+                if (denunciasDoChat.isEmpty()) {
+                    System.out.println("Não existem denúncias pendentes para este chat.");
+                    t.rollback();
+                    return;
+                }
+
+                Utilizador utilizador = denunciasDoChat.get(0).getDenunciado();
+
+                if (utilizador.getTipo() == TipoUtilizador.BANIDO) {
+                    System.out.println("Este utilizador já se encontra banido.");
+                    t.rollback();
+                    return;
+                }
+
+                utilizador.setTipo(TipoUtilizador.BANIDO);
+
+                // Todas as denúncias pendentes em que ele é o denunciado (de qualquer chat)
+                List<Denuncia> todasPendentes = session.createQuery(
+                        "from Denuncia d where d.denunciado.idUtilizador = :idDenunciado and d.estado = :pendente",
+                        Denuncia.class)
+                    .setParameter("idDenunciado", utilizador.getIdUtilizador())
+                    .setParameter("pendente", Estado.PENDENTE)
+                    .getResultList();
+
+                for (Denuncia d : todasPendentes) {
+                    d.setEstado(Estado.ACEITE);
+                }
+
+                apagarAnunciosDoUtilizador(session, utilizador);
+
+                t.commit();
+                System.out.println("O utilizador " + utilizador.getNome() + " foi banido do sistema.");
+
+            } catch (Exception e) {
+                if (t.isActive()) {
+                    t.rollback();
+                }
+                e.printStackTrace();
+            }
+        }
     }
     
     private void apagarAnunciosDoUtilizador(Session session, Utilizador utilizador) {
