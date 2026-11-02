@@ -285,12 +285,21 @@ public class Gerir {
 
 				
 				for (Chat c : todosOsChats) {
-					if (c.getCriador().getIdUtilizador() == u.getIdUtilizador()
-							|| c.getInteressado().getIdUtilizador() == u.getIdUtilizador()) {
-						if(c.getAnuncio().getEstado() == Estado.PENDENTE) {
-							meusChats.add(c);
+						if (c.getCriador().getIdUtilizador() == u.getIdUtilizador()						
+								|| c.getInteressado().getIdUtilizador() == u.getIdUtilizador()) {
+							if(c.getAnuncio().getEstado() == Estado.PENDENTE) {
+								meusChats.add(c);
+							}
 						}
-					}
+				}
+			}
+			return meusChats;
+		}
+		
+		public List<Chat> retirarOsBanidos(List<Chat> meusChats){
+			for(Chat c : meusChats) {
+				if(c.getInteressado().getTipo() == TipoUtilizador.BANIDO || c.getCriador().getTipo() == TipoUtilizador.BANIDO ) {
+					meusChats.remove(c);
 				}
 			}
 			return meusChats;
@@ -590,23 +599,19 @@ public class Gerir {
             return;
         }
 
-        Transaction transaction = null;
         try (Session session = sessionFactory.openSession()) {
-            transaction = session.beginTransaction();
-
-            // Cria o objeto AnuncioEncontrado
-            AnuncioEncontrado anuncio = new AnuncioEncontrado(sessao, titulo, categoria, descricao, cor, localizacao);
-
-            // Persiste o anúncio na base de dados
-            session.persist(anuncio);
-
-            transaction.commit();
-            System.out.println("Anúncio encontrado registado com sucesso!");
-        } catch (Exception e) {
-            if (transaction != null) {
-                transaction.rollback();
+            Transaction transaction = session.beginTransaction();
+            try {
+                AnuncioEncontrado anuncio = new AnuncioEncontrado(sessao, titulo, categoria, descricao, cor, localizacao);
+                session.persist(anuncio);
+                transaction.commit();
+                System.out.println("Anúncio encontrado registado com sucesso!");
+            } catch (Exception e) {
+                if (transaction.isActive()) {
+                    transaction.rollback();
+                }
+                e.printStackTrace();
             }
-            e.printStackTrace();
         }
     }
     
@@ -633,24 +638,26 @@ public class Gerir {
             return;
         }
 
-        Transaction transaction = null;
         try (Session session = sessionFactory.openSession()) {
-            transaction = session.beginTransaction();
-
-            // Cria o objeto AnuncioPerdido usando o construtor adequado
-            AnuncioPerdido anuncio = new AnuncioPerdido(sessao, titulo, categoria, descricao, cor, dataPerda);
-            anuncio.setDataPerda(dataPerda);
-
-            // Persiste o anúncio na base de dados
-            session.persist(anuncio);
-
-            transaction.commit();
-            System.out.println("Anúncio perdido criado com sucesso!");
-        } catch (Exception e) {
-            if (transaction != null && transaction.isActive()) {
-                transaction.rollback();
-            }
-            e.printStackTrace();
+            Transaction transaction = session.beginTransaction();
+	        try {
+	            transaction = session.beginTransaction();
+	
+	            // Cria o objeto AnuncioPerdido usando o construtor adequado
+	            AnuncioPerdido anuncio = new AnuncioPerdido(sessao, titulo, categoria, descricao, cor, dataPerda);
+	            anuncio.setDataPerda(dataPerda);
+	
+	            // Persiste o anúncio na base de dados
+	            session.persist(anuncio);
+	
+	            transaction.commit();
+	            System.out.println("Anúncio perdido criado com sucesso!");
+	        } catch (Exception e) {
+	            if (transaction != null && transaction.isActive()) {
+	                transaction.rollback();
+	            }
+	            e.printStackTrace();
+	        }
         }
     }
     
@@ -696,94 +703,94 @@ public class Gerir {
      * @param inicio primeira data do intervalo
      * @param fim    última data do intervalo
      */
+    public void mostrarEstatisticas(LocalDate inicio, LocalDate fim) {
 
-public void mostrarEstatisticas(LocalDate inicio, LocalDate fim) {
+        // Validar as datas
+        if (inicio == null || fim == null || inicio.isAfter(fim)) {
+            System.out.println("Intervalo de datas inválido.");
+            return;
+        }
 
-    // Validar las fechas
-    if (inicio == null || fim == null || inicio.isAfter(fim)) {
-        System.out.println("Intervalo de datas inválido.");
-        return;
-    }
+        // Rango de fechas para las denuncias
+        LocalDateTime desde = inicio.atStartOfDay();
+        LocalDateTime ate = fim.plusDays(1).atStartOfDay();
 
-    // Rango de fechas para las denuncias
-    LocalDateTime desde = inicio.atStartOfDay();
-    LocalDateTime ate = fim.plusDays(1).atStartOfDay();
+        try (Session session = sessionFactory.openSession()) {
 
-    try (Session session = sessionFactory.openSession()) {
+            // 1. Contar anuncios perdidos (incluye anuncios apagados)
+            long perdidos = contarAnuncios(
+                    session, "AnuncioPerdido", null,
+                    inicio, fim, null);
 
-        // 1. Contar anuncios perdidos (incluye anuncios apagados)
-        long perdidos = contarAnuncios(
-                session, "AnuncioPerdido", null,
-                inicio, fim, null);
+            // 2. Contar anuncios encontrados (incluye anuncios apagados)
+            long encontrados = contarAnuncios(
+                    session, "AnuncioEncontrado", null,
+                    inicio, fim, null);
 
-        // 2. Contar anuncios encontrados (incluye anuncios apagados)
-        long encontrados = contarAnuncios(
-                session, "AnuncioEncontrado", null,
-                inicio, fim, null);
+            // 3. Contar objetos perdidos que dieron match
+            long resolvidos = contarAnuncios(
+                    session, "AnuncioPerdido",
+                    "a.estado in (:estados)",
+                    inicio, fim,
+                    List.of(Estado.RESOLVIDO, Estado.APAGADO_RESOLVIDO));
 
-        // 3. Contar objetos perdidos que dieron match
-        long resolvidos = contarAnuncios(
-                session, "AnuncioPerdido",
-                "a.estado in (:estados)",
-                inicio, fim,
-                List.of(Estado.RESOLVIDO, Estado.APAGADO_RESOLVIDO));
+            // 4. Categoría más frecuente de objetos perdidos
+            String categoriaPerdida = categoriaMaisFrequente(
+                    session, "AnuncioPerdido", inicio, fim);
 
-        // 4. Categoría más frecuente de objetos perdidos
-        String categoriaPerdida = categoriaMaisFrequente(
-                session, "AnuncioPerdido", inicio, fim);
+            // 5. Categoría más frecuente de objetos encontrados
+            String categoriaEncontrada = categoriaMaisFrequente(
+                    session, "AnuncioEncontrado", inicio, fim);
 
-        // 5. Categoría más frecuente de objetos encontrados
-        String categoriaEncontrada = categoriaMaisFrequente(
-                session, "AnuncioEncontrado", inicio, fim);
+            // 6. Total de denuncias registradas en el período
+            Long totalDenuncias = session.createQuery(
+                    "select count(d) from Denuncia d " +
+                    "where d.dataHora >= :desde and d.dataHora < :ate",
+                    Long.class)
+                    .setParameter("desde", desde)
+                    .setParameter("ate", ate)
+                    .getSingleResult();
 
-        // 6. Total de denuncias registradas en el período
-        Long totalDenuncias = session.createQuery(
-                "select count(d) from Denuncia d " +
-                "where d.dataHora >= :desde and d.dataHora < :ate",
-                Long.class)
-                .setParameter("desde", desde)
-                .setParameter("ate", ate)
-                .getSingleResult();
+            // 7. Denuncias registradas en el período que están aceptadas
+            Long denunciasAceites = session.createQuery(
+                    "select count(d) from Denuncia d " +
+                    "where d.estado = :estado " +
+                    "and d.dataHora >= :desde and d.dataHora < :ate",
+                    Long.class)
+                    .setParameter("estado", Estado.ACEITE)
+                    .setParameter("desde", desde)
+                    .setParameter("ate", ate)
+                    .getSingleResult();
 
-        // 7. Denuncias registradas en el período que están aceptadas
-        Long denunciasAceites = session.createQuery(
-                "select count(d) from Denuncia d " +
-                "where d.estado = :estado " +
-                "and d.dataHora >= :desde and d.dataHora < :ate",
-                Long.class)
-                .setParameter("estado", Estado.ACEITE)
-                .setParameter("desde", desde)
-                .setParameter("ate", ate)
-                .getSingleResult();
+            // 8. Total actual de utilizadores baneados (sin filtro de fechas)
+            Long utilizadoresBanidos = session.createQuery(
+                    "select count(u) from Utilizador u " +
+                    "where u.tipo = :tipo",
+                    Long.class)
+                    .setParameter("tipo", TipoUtilizador.BANIDO)
+                    .getSingleResult();
 
-        // 8. Total actual de utilizadores baneados (sin filtro de fechas)
-        Long utilizadoresBanidos = session.createQuery(
-                "select count(u) from Utilizador u " +
-                "where u.tipo = :tipo",
-                Long.class)
-                .setParameter("tipo", TipoUtilizador.BANIDO)
-                .getSingleResult();
+            // 9. Mostrar estadísticas
+            System.out.println("\n--- Estatísticas (" + inicio + " a " + fim + ") ---");
 
-        // 9. Mostrar estadísticas
-        System.out.println("\n--- Estatísticas (" + inicio + " a " + fim + ") ---");
+            System.out.println("\nANÚNCIOS");
+            System.out.println("Objetos Perdidos: " + perdidos);
+            System.out.println("Objetos Encontrados: " + encontrados);
+            System.out.println("Objetos Perdidos que deram Match: " + resolvidos);
 
-        System.out.println("\nANÚNCIOS");
-        System.out.println("Objetos Perdidos: " + perdidos);
-        System.out.println("Objetos Encontrados: " + encontrados);
-        System.out.println("Objetos Perdidos que deram Match: " + resolvidos);
+            System.out.println("\nCATEGORIAS");
+            System.out.println("Categoria mais perdida: " + categoriaPerdida);
+            System.out.println("Categoria mais encontrada: " + categoriaEncontrada);
 
-        System.out.println("\nCATEGORIAS");
-        System.out.println("Categoria mais perdida: " + categoriaPerdida);
-        System.out.println("Categoria mais encontrada: " + categoriaEncontrada);
+            System.out.println("\nDENÚNCIAS");
+            System.out.println("Total de denúncias: " + totalDenuncias);
+            System.out.println("Denúncias aceites (das registadas no período): "
+                    + denunciasAceites);
 
-        System.out.println("\nDENÚNCIAS");
-        System.out.println("Total de denúncias: " + totalDenuncias);
-        System.out.println("Denúncias aceites (das registadas no período): "
-                + denunciasAceites);
-
-        System.out.println("\nUTILIZADORES");
-        System.out.println("Utilizadores banidos (total atual): "
-                + utilizadoresBanidos);
+            System.out.println("\nUTILIZADORES");
+            System.out.println("Utilizadores banidos (total atual): "
+                    + utilizadoresBanidos);
+        }
     }
 }
 
@@ -856,25 +863,29 @@ public void mostrarEstatisticas(LocalDate inicio, LocalDate fim) {
     				e.printStackTrace();
     			}
     	}
+    
     public void criarGestorSeNaoExistir() {
         // Se já existe um utilizador com este email na BD, não faz nada
-        if (procurarPorEmail(GESTOR_EMAIL) != null) {
-            return;
-        }
+    	    if (procurarPorEmail(GESTOR_EMAIL) != null) {
+    	        return;
+    	    }
 
-        Transaction t = null;
-        try (Session session = sessionFactory.openSession()) {
-            t = session.beginTransaction();
-            session.persist(new Utilizador("Gestor", GESTOR_EMAIL, gerarHash(GESTOR_PASSWORD), TipoUtilizador.GESTOR));//guarda o hash
-            t.commit();
-            System.out.println("Gestor criado.");
-        } catch (Exception e) {
-            if (t != null && t.isActive()) {
-                t.rollback();
-            }
-            e.printStackTrace();
-        }
+    	    try (Session session = sessionFactory.openSession()) {
+    	        Transaction t = session.beginTransaction();
+    	        try {
+    	            session.persist(new Utilizador("Gestor", GESTOR_EMAIL,
+    	                    gerarHash(GESTOR_PASSWORD), TipoUtilizador.GESTOR));
+    	            t.commit();
+    	            System.out.println("Gestor criado.");
+    	        } catch (Exception e) {
+    	            if (t.isActive()) {
+    	                t.rollback();   // session is still open here
+    	            }
+    	            e.printStackTrace();
+    	        }
+    	    }
     }
+    
  // Transforma a password normal num hash (é isto que se guarda na BD).
     private String gerarHash(String password) {
         return BCrypt.hashpw(password, BCrypt.gensalt());
@@ -968,37 +979,56 @@ public void mostrarEstatisticas(LocalDate inicio, LocalDate fim) {
     	}
     }
     
-    public void banirUtilizadorDiretamente(int idUtilizador) {
-    	Transaction transaction = null;
-    	try(Session session = sessionFactory.openSession()){
-    		transaction = session.beginTransaction();
-    		
-    		Utilizador utilizador = session.get(Utilizador.class, idUtilizador);
-    		if(utilizador == null) {
-    			System.out.println("Utilizador não encontrado.");
-    			transaction.rollback();
-    			return;
-    		}
-    		
-    		if(utilizador.getTipo() == TipoUtilizador.BANIDO) {
-    			System.out.println("Este utilizador já se encontra banido.");
-    			transaction.rollback();
-    			return;
-    		}
-    		
-    		utilizador.setTipo(TipoUtilizador.BANIDO);
-    		session.merge(utilizador);
-    		
-    		transaction.commit();
-    		System.out.println("O utilizador " + utilizador.getNome() + "foi banido do sistema.");
-    		apagarAnunciosDoUtilizador(session,utilizador);
-    		
-    	} catch(Exception e) {
-    		if(transaction != null && transaction.isActive()) {
-    			transaction.rollback();
-    		}
-    		e.printStackTrace();
-    	}
+    public void banirUtilizadorDiretamente(int idChat) {
+        try (Session session = sessionFactory.openSession()) {
+            Transaction t = session.beginTransaction();
+            try {
+                List<Denuncia> denunciasDoChat = session.createQuery(
+                        "from Denuncia d where d.chat.idChat = :idChat and d.estado = :pendente", Denuncia.class)
+                    .setParameter("idChat", idChat)
+                    .setParameter("pendente", Estado.PENDENTE)
+                    .getResultList();
+
+                if (denunciasDoChat.isEmpty()) {
+                    System.out.println("Não existem denúncias pendentes para este chat.");
+                    t.rollback();
+                    return;
+                }
+
+                Utilizador utilizador = denunciasDoChat.get(0).getDenunciado();
+
+                if (utilizador.getTipo() == TipoUtilizador.BANIDO) {
+                    System.out.println("Este utilizador já se encontra banido.");
+                    t.rollback();
+                    return;
+                }
+
+                utilizador.setTipo(TipoUtilizador.BANIDO);
+
+                // Todas as denúncias pendentes em que ele é o denunciado (de qualquer chat)
+                List<Denuncia> todasPendentes = session.createQuery(
+                        "from Denuncia d where d.denunciado.idUtilizador = :idDenunciado and d.estado = :pendente",
+                        Denuncia.class)
+                    .setParameter("idDenunciado", utilizador.getIdUtilizador())
+                    .setParameter("pendente", Estado.PENDENTE)
+                    .getResultList();
+
+                for (Denuncia d : todasPendentes) {
+                    d.setEstado(Estado.ACEITE);
+                }
+
+                apagarAnunciosDoUtilizador(session, utilizador);
+
+                t.commit();
+                System.out.println("O utilizador " + utilizador.getNome() + " foi banido do sistema.");
+
+            } catch (Exception e) {
+                if (t.isActive()) {
+                    t.rollback();
+                }
+                e.printStackTrace();
+            }
+        }
     }
     
     private void apagarAnunciosDoUtilizador(Session session, Utilizador utilizador) {
@@ -1018,13 +1048,7 @@ public void mostrarEstatisticas(LocalDate inicio, LocalDate fim) {
     
     //Metodos auxiliares
 
-	private long contarAnuncios(
-	        Session session,
-	        String entidade,
-	        String condicao,
-	        LocalDate inicio,
-	        LocalDate fim,
-	        List<Estado> estados) {
+	private long contarAnuncios(Session session, String entidade, String condicao, LocalDate inicio, LocalDate fim, List<Estado> estados) {
 	
 	    String hql = "select count(a) from " + entidade + " a " +
 	                 "where a.dataPublicacao >= :inicio " +

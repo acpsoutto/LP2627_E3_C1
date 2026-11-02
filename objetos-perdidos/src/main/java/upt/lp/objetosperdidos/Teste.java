@@ -187,8 +187,10 @@ public class Teste {
 								break;
 								case 5:
 									categoriaFiltro = Categoria.OUTROS;
+								break;
 								case 0:
 									categoriaFiltro = null;
+								break;
 								default:
 									System.out.println("Categoria invalida");
 								}
@@ -235,7 +237,6 @@ public class Teste {
 						while(true) {
 							System.out.println("Categoria (Enter para não inserir):");
 							System.out.println("1-Eletronicos | 2-Livros | 3-Material Escrita | 4-Roupa | 5-Outros");
-							System.out.println("Categoria (0 para não inserir):");
 	
 							int catnum = inserirInt(sc);
 							switch(catnum) {
@@ -253,8 +254,7 @@ public class Teste {
 							break;
 							case 5:
 								categoria = Categoria.OUTROS;
-							case 0:
-								categoria = null;
+							break;
 							default:
 								System.out.println("Categoria invalida");
 							}
@@ -328,6 +328,7 @@ public class Teste {
 					    
 					case 4:
 						List <Chat> meusChats = gr.listarChats(gr.getPerfil());
+						meusChats = gr.retirarOsBanidos(meusChats);
 						gr.imprimirChats(meusChats);
 						
 						if(!meusChats.isEmpty()) {
@@ -461,17 +462,14 @@ public class Teste {
 		                    					gr.resolverDenuncia(idChatGestor, Estado.ACEITE);
 		                    					break;
 		                    				
-		                    				case 3:
-		                    					System.out.println("Insira o ID do utilizador que deseja banir: ");
-		                    					int idUtilizadorBanir = inserirInt(sc);
-		                    					
-		                    					gr.banirUtilizadorDiretamente(idUtilizadorBanir);
+		                    				case 3:	                    		
+		                    					gr.banirUtilizadorDiretamente(idChatGestor);
 		                    					break;
 		                    					
 		                    				case 0:
 		                    					break;
 		                    					
-		                    				default:
+		                    				default: 
 		                    					System.out.println("Opção invalida");
 		                    				}
 	                    				
