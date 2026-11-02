@@ -1,6 +1,7 @@
 package upt.lp.objetosperdidos;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import org.hibernate.Session;
@@ -589,23 +590,19 @@ public class Gerir {
             return;
         }
 
-        Transaction transaction = null;
         try (Session session = sessionFactory.openSession()) {
-            transaction = session.beginTransaction();
-
-            // Cria o objeto AnuncioEncontrado
-            AnuncioEncontrado anuncio = new AnuncioEncontrado(sessao, titulo, categoria, descricao, cor, localizacao);
-
-            // Persiste o anúncio na base de dados
-            session.persist(anuncio);
-
-            transaction.commit();
-            System.out.println("Anúncio encontrado registado com sucesso!");
-        } catch (Exception e) {
-            if (transaction != null) {
-                transaction.rollback();
+            Transaction transaction = session.beginTransaction();
+            try {
+                AnuncioEncontrado anuncio = new AnuncioEncontrado(sessao, titulo, categoria, descricao, cor, localizacao);
+                session.persist(anuncio);
+                transaction.commit();
+                System.out.println("Anúncio encontrado registado com sucesso!");
+            } catch (Exception e) {
+                if (transaction.isActive()) {
+                    transaction.rollback();
+                }
+                e.printStackTrace();
             }
-            e.printStackTrace();
         }
     }
     
@@ -632,24 +629,26 @@ public class Gerir {
             return;
         }
 
-        Transaction transaction = null;
         try (Session session = sessionFactory.openSession()) {
-            transaction = session.beginTransaction();
-
-            // Cria o objeto AnuncioPerdido usando o construtor adequado
-            AnuncioPerdido anuncio = new AnuncioPerdido(sessao, titulo, categoria, descricao, cor, dataPerda);
-            anuncio.setDataPerda(dataPerda);
-
-            // Persiste o anúncio na base de dados
-            session.persist(anuncio);
-
-            transaction.commit();
-            System.out.println("Anúncio perdido criado com sucesso!");
-        } catch (Exception e) {
-            if (transaction != null && transaction.isActive()) {
-                transaction.rollback();
-            }
-            e.printStackTrace();
+            Transaction transaction = session.beginTransaction();
+	        try {
+	            transaction = session.beginTransaction();
+	
+	            // Cria o objeto AnuncioPerdido usando o construtor adequado
+	            AnuncioPerdido anuncio = new AnuncioPerdido(sessao, titulo, categoria, descricao, cor, dataPerda);
+	            anuncio.setDataPerda(dataPerda);
+	
+	            // Persiste o anúncio na base de dados
+	            session.persist(anuncio);
+	
+	            transaction.commit();
+	            System.out.println("Anúncio perdido criado com sucesso!");
+	        } catch (Exception e) {
+	            if (transaction != null && transaction.isActive()) {
+	                transaction.rollback();
+	            }
+	            e.printStackTrace();
+	        }
         }
     }
     
@@ -696,43 +695,92 @@ public class Gerir {
      * @param fim    última data do intervalo
      */
     public void mostrarEstatisticas(LocalDate inicio, LocalDate fim) {
-    // Validar se as datas são coerentes
-    	if(inicio.isAfter(fim)) {
-    		System.out.println("A data de inicio não pode ser posterior à de fim. ");
-    		return;
-    	}
+
+        // Validar as datas
+        if (inicio == null || fim == null || inicio.isAfter(fim)) {
+            System.out.println("Intervalo de datas inválido.");
+            return;
+        }
+
+        // Rango de fechas para las denuncias
+        LocalDateTime desde = inicio.atStartOfDay();
+        LocalDateTime ate = fim.plusDays(1).atStartOfDay();
+
         try (Session session = sessionFactory.openSession()) {
-            List<Anuncio> lista = session
-                    .createQuery(
-                            "from Anuncio a " +
-                            "where a.dataPublicacao >= :inicio and a.dataPublicacao <= :fim",
-                            Anuncio.class)
-                    .setParameter("inicio", inicio)
-                    .setParameter("fim", fim)
-                    .getResultList();
 
-            int perdidos = 0;
-            int encontrados = 0;
-            int resolvidos = 0;
+            // 1. Contar anuncios perdidos (incluye anuncios apagados)
+            long perdidos = contarAnuncios(
+                    session, "AnuncioPerdido", null,
+                    inicio, fim, null);
 
-            for (Anuncio a : lista) {
-                if (a instanceof AnuncioPerdido) {
-                    perdidos++;
-                } else if (a instanceof AnuncioEncontrado) {
-                    encontrados++;
-                }
-                if (a.getEstado() == Estado.RESOLVIDO) {
-                    resolvidos++;
-                }
-                if (a.getEstado() == Estado.APAGADO_RESOLVIDO) {
-                	resolvidos++;
-                }
-            }
+            // 2. Contar anuncios encontrados (incluye anuncios apagados)
+            long encontrados = contarAnuncios(
+                    session, "AnuncioEncontrado", null,
+                    inicio, fim, null);
 
+            // 3. Contar objetos perdidos que dieron match
+            long resolvidos = contarAnuncios(
+                    session, "AnuncioPerdido",
+                    "a.estado in (:estados)",
+                    inicio, fim,
+                    List.of(Estado.RESOLVIDO, Estado.APAGADO_RESOLVIDO));
+
+            // 4. Categoría más frecuente de objetos perdidos
+            String categoriaPerdida = categoriaMaisFrequente(
+                    session, "AnuncioPerdido", inicio, fim);
+
+            // 5. Categoría más frecuente de objetos encontrados
+            String categoriaEncontrada = categoriaMaisFrequente(
+                    session, "AnuncioEncontrado", inicio, fim);
+
+            // 6. Total de denuncias registradas en el período
+            Long totalDenuncias = session.createQuery(
+                    "select count(d) from Denuncia d " +
+                    "where d.dataHora >= :desde and d.dataHora < :ate",
+                    Long.class)
+                    .setParameter("desde", desde)
+                    .setParameter("ate", ate)
+                    .getSingleResult();
+
+            // 7. Denuncias registradas en el período que están aceptadas
+            Long denunciasAceites = session.createQuery(
+                    "select count(d) from Denuncia d " +
+                    "where d.estado = :estado " +
+                    "and d.dataHora >= :desde and d.dataHora < :ate",
+                    Long.class)
+                    .setParameter("estado", Estado.ACEITE)
+                    .setParameter("desde", desde)
+                    .setParameter("ate", ate)
+                    .getSingleResult();
+
+            // 8. Total actual de utilizadores baneados (sin filtro de fechas)
+            Long utilizadoresBanidos = session.createQuery(
+                    "select count(u) from Utilizador u " +
+                    "where u.tipo = :tipo",
+                    Long.class)
+                    .setParameter("tipo", TipoUtilizador.BANIDO)
+                    .getSingleResult();
+
+            // 9. Mostrar estadísticas
             System.out.println("\n--- Estatísticas (" + inicio + " a " + fim + ") ---");
+
+            System.out.println("\nANÚNCIOS");
             System.out.println("Objetos Perdidos: " + perdidos);
             System.out.println("Objetos Encontrados: " + encontrados);
-            System.out.println("Objetos com Match (Resolvidos): " + resolvidos);
+            System.out.println("Objetos Perdidos que deram Match: " + resolvidos);
+
+            System.out.println("\nCATEGORIAS");
+            System.out.println("Categoria mais perdida: " + categoriaPerdida);
+            System.out.println("Categoria mais encontrada: " + categoriaEncontrada);
+
+            System.out.println("\nDENÚNCIAS");
+            System.out.println("Total de denúncias: " + totalDenuncias);
+            System.out.println("Denúncias aceites (das registadas no período): "
+                    + denunciasAceites);
+
+            System.out.println("\nUTILIZADORES");
+            System.out.println("Utilizadores banidos (total atual): "
+                    + utilizadoresBanidos);
         }
     }
     
@@ -804,25 +852,29 @@ public class Gerir {
     				e.printStackTrace();
     			}
     	}
+    
     public void criarGestorSeNaoExistir() {
         // Se já existe um utilizador com este email na BD, não faz nada
-        if (procurarPorEmail(GESTOR_EMAIL) != null) {
-            return;
-        }
+    	    if (procurarPorEmail(GESTOR_EMAIL) != null) {
+    	        return;
+    	    }
 
-        Transaction t = null;
-        try (Session session = sessionFactory.openSession()) {
-            t = session.beginTransaction();
-            session.persist(new Utilizador("Gestor", GESTOR_EMAIL, gerarHash(GESTOR_PASSWORD), TipoUtilizador.GESTOR));//guarda o hash
-            t.commit();
-            System.out.println("Gestor criado.");
-        } catch (Exception e) {
-            if (t != null && t.isActive()) {
-                t.rollback();
-            }
-            e.printStackTrace();
-        }
+    	    try (Session session = sessionFactory.openSession()) {
+    	        Transaction t = session.beginTransaction();
+    	        try {
+    	            session.persist(new Utilizador("Gestor", GESTOR_EMAIL,
+    	                    gerarHash(GESTOR_PASSWORD), TipoUtilizador.GESTOR));
+    	            t.commit();
+    	            System.out.println("Gestor criado.");
+    	        } catch (Exception e) {
+    	            if (t.isActive()) {
+    	                t.rollback();   // session is still open here
+    	            }
+    	            e.printStackTrace();
+    	        }
+    	    }
     }
+    
  // Transforma a password normal num hash (é isto que se guarda na BD).
     private String gerarHash(String password) {
         return BCrypt.hashpw(password, BCrypt.gensalt());
@@ -963,5 +1015,60 @@ public class Gerir {
             }
         }
     }
+    
+    private long contarAnuncios(
+	        Session session,
+	        String entidade,
+	        String condicao,
+	        LocalDate inicio,
+	        LocalDate fim,
+	        List<Estado> estados) {
+
+	    String hql = "select count(a) from " + entidade + " a " +
+	                 "where a.dataPublicacao >= :inicio " +
+	                 "and a.dataPublicacao <= :fim";
+
+	    if (condicao != null && !condicao.isEmpty()) {
+	        hql += " and " + condicao;
+	    }
+
+	    var query = session.createQuery(hql, Long.class)
+	            .setParameter("inicio", inicio)
+	            .setParameter("fim", fim);
+
+	    if (estados != null && !estados.isEmpty()) {
+	        query.setParameterList("estados", estados);
+	    }
+
+	    return query.getSingleResult();
+	}
+
+
+	private String categoriaMaisFrequente(
+	        Session session,
+	        String entidade,
+	        LocalDate inicio,
+	        LocalDate fim) {
+
+	    String hql = "select a.categoria, count(a) from " + entidade + " a " +
+	                 "where a.dataPublicacao >= :inicio " +
+	                 "and a.dataPublicacao <= :fim " +
+	                 "group by a.categoria " +
+	                 "order by count(a) desc, a.categoria asc";
+
+	    List<Object[]> resultados = session.createQuery(hql, Object[].class)
+	            .setParameter("inicio", inicio)
+	            .setParameter("fim", fim)
+	            .setMaxResults(1)
+	            .getResultList();
+
+	    if (resultados.isEmpty()) {
+	        return "0";
+	    }
+
+	    Object[] resultado = resultados.get(0);
+
+	    return resultado[0] + " (" + resultado[1] + ")";
+	}
     
 }
