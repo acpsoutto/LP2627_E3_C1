@@ -792,6 +792,8 @@ public class Gerir {
                     + utilizadoresBanidos);
         }
     }
+}
+
     
     public void denunciarUtilizador(int idChat, int idDenunciante, String motivo) {
     	Transaction transaction = null;
@@ -1044,30 +1046,26 @@ public class Gerir {
         }
     }
     
-    private long contarAnuncios(
-	        Session session,
-	        String entidade,
-	        String condicao,
-	        LocalDate inicio,
-	        LocalDate fim,
-	        List<Estado> estados) {
+    //Metodos auxiliares
 
+	private long contarAnuncios(Session session, String entidade, String condicao, LocalDate inicio, LocalDate fim, List<Estado> estados) {
+	
 	    String hql = "select count(a) from " + entidade + " a " +
 	                 "where a.dataPublicacao >= :inicio " +
 	                 "and a.dataPublicacao <= :fim";
-
+	
 	    if (condicao != null && !condicao.isEmpty()) {
 	        hql += " and " + condicao;
 	    }
-
+	
 	    var query = session.createQuery(hql, Long.class)
 	            .setParameter("inicio", inicio)
 	            .setParameter("fim", fim);
-
+	
 	    if (estados != null && !estados.isEmpty()) {
 	        query.setParameterList("estados", estados);
 	    }
-
+	
 	    return query.getSingleResult();
 	}
 
@@ -1077,26 +1075,26 @@ public class Gerir {
 	        String entidade,
 	        LocalDate inicio,
 	        LocalDate fim) {
-
+	
 	    String hql = "select a.categoria, count(a) from " + entidade + " a " +
 	                 "where a.dataPublicacao >= :inicio " +
 	                 "and a.dataPublicacao <= :fim " +
 	                 "group by a.categoria " +
 	                 "order by count(a) desc, a.categoria asc";
-
+	
 	    List<Object[]> resultados = session.createQuery(hql, Object[].class)
 	            .setParameter("inicio", inicio)
 	            .setParameter("fim", fim)
 	            .setMaxResults(1)
 	            .getResultList();
-
+	
 	    if (resultados.isEmpty()) {
 	        return "0";
 	    }
-
+	
 	    Object[] resultado = resultados.get(0);
-
+	
 	    return resultado[0] + " (" + resultado[1] + ")";
 	}
-    
+
 }
