@@ -792,7 +792,6 @@ public class Gerir {
                     + utilizadoresBanidos);
         }
     }
-}
 
     
     public void denunciarUtilizador(int idChat, int idDenunciante, String motivo) {
@@ -968,6 +967,17 @@ public class Gerir {
     			session.merge(utilizador);
     			System.out.println("[ALERTA] O utilizador " + utilizador.getNome() + "atingiu 5 denúnicas válidas e foi automaticamente banido.");
     			apagarAnunciosDoUtilizador(session,utilizador);
+    			
+    			List<Denuncia> todasPendentes = session.createQuery(
+                        "from Denuncia d where d.denunciado.idUtilizador = :idDenunciado and d.estado = :pendente",
+                        Denuncia.class)
+                    .setParameter("idDenunciado", utilizador.getIdUtilizador())
+                    .setParameter("pendente", Estado.PENDENTE)
+                    .getResultList();
+
+                for (Denuncia d : todasPendentes) {
+                    d.setEstado(Estado.ACEITE);
+                }
     		}
     		transaction.commit();	
     		
