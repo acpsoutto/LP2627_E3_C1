@@ -297,11 +297,8 @@ public class Gerir {
 		}
 		
 		public List<Chat> retirarOsBanidos(List<Chat> meusChats){
-			for(Chat c : meusChats) {
-				if(c.getInteressado().getTipo() == TipoUtilizador.BANIDO || c.getCriador().getTipo() == TipoUtilizador.BANIDO ) {
-					meusChats.remove(c);
-				}
-			}
+			meusChats.removeIf (c -> c.getInteressado().getTipo() == TipoUtilizador.BANIDO || c.getCriador().getTipo()== TipoUtilizador.BANIDO);
+			
 			return meusChats;
 		}
 		
@@ -641,7 +638,6 @@ public class Gerir {
         try (Session session = sessionFactory.openSession()) {
             Transaction transaction = session.beginTransaction();
 	        try {
-	            transaction = session.beginTransaction();
 	
 	            // Cria o objeto AnuncioPerdido usando o construtor adequado
 	            AnuncioPerdido anuncio = new AnuncioPerdido(sessao, titulo, categoria, descricao, cor, dataPerda);
@@ -905,8 +901,13 @@ public class Gerir {
                 .setParameter("idChat", idChat)
                 .setParameter("pendente", Estado.PENDENTE)
                 .getResultList();
-            
-           int idDenuncia = denuncias.get(0).getIdDenuncia();
+           
+            if (denuncias.isEmpty()) {
+            	System.out.println("Não existem denuncias para este chat");
+            	transaction.rollback();
+            	return;
+            }
+            int idDenuncia = denuncias.get(0).getIdDenuncia();
         	
     		Denuncia denuncia = session.get(Denuncia.class, idDenuncia);
     		if(denuncia == null) {
