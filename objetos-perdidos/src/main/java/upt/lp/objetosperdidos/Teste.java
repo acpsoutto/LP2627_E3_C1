@@ -157,7 +157,7 @@ public class Teste {
 							System.out.println("2- Filtrar Pesquisa");
 							System.out.println("Outra opção- Voltar");
 							System.out.println("Opção");
-							opt = sc.nextInt();
+							opt = inserirInt(sc);
 						
 						if(opt == 1) {
 							System.out.println("Qual anuncio quer reivindicar:");
@@ -235,7 +235,7 @@ public class Teste {
 	
 					    Categoria categoria = null;
 						while(true) {
-							System.out.println("Categoria (Enter para não inserir):");
+							System.out.println("Categoria (0 para não inserir):");
 							System.out.println("1-Eletronicos | 2-Livros | 3-Material Escrita | 4-Roupa | 5-Outros");
 	
 							int catnum = inserirInt(sc);
